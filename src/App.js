@@ -12,6 +12,7 @@ import ProfileScreen from './views/ProfileScreen.jsx';
 import UpdateUserScreen from './views/UpdateUserScreen.jsx';
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import ManageAddressesScreen from "./views/ManageAddressesScreen.jsx";
 
 function App() {
   return (
@@ -28,7 +29,8 @@ function App() {
         <Route path="/product" element={<ProductScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/user/update" element={<UpdateUserScreen />} />
-        <Route path="/user/manageAddresses" element={<UpdateUserScreen />} />
+        <Route path="/user/manageAddresses" element={<ManageAddressesScreen />} />
+        <Route path="/user/insertAddress" element={<ManageAddressesScreen />} />
       </Routes>
       <Footer/>
     </BrowserRouter>
