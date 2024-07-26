@@ -1,6 +1,7 @@
 import { React, Fragment } from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
 import './styleHomeScreen.css';
+import { Link } from 'react-router-dom';
 
 function CardsCategoryHome() {
 
@@ -30,7 +31,7 @@ function CardsCategoryHome() {
             imagen: 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_600,h_600/global/396172/01/mod02/fnd/PNA/fmt/png/Tenis-Mujer-CA-Pro-Classic'
         }
     ];
-    
+
     return (
         <>
             {categorias.map((item, index) => (
@@ -43,7 +44,9 @@ function CardsCategoryHome() {
                                     <Card.ImgOverlay className="card-overlay">
                                         <Col className="textCard">
                                             <Card.Title className="responsive-text-card">{item.categoria}</Card.Title>
-                                            <button className='button-product-category responsive-button'>Comprar</button>
+                                            <Link to='/product'>
+                                                <button className='button-product-category responsive-button'>Comprar</button>
+                                            </Link>
                                         </Col>
                                     </Card.ImgOverlay>
                                 </Card>
@@ -55,8 +58,9 @@ function CardsCategoryHome() {
                                         <Card.ImgOverlay className="card-overlay">
                                             <Col className="textCard">
                                                 <Card.Title className="responsive-text-card">{categorias[index + 1].categoria}</Card.Title>
-                                                <button className='button-product-category responsive-button'>Comprar</button>
-                                            </Col>
+                                                <Link to='/product'>
+                                                    <button className='button-product-category responsive-button'>Comprar</button>
+                                                </Link>                                            </Col>
                                         </Card.ImgOverlay>
                                     </Card>
                                 </Col>
