@@ -35,7 +35,6 @@ export const Profile = () => {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             margin: 0;
             box-sizing: border-box;
             padding: 10px;
@@ -44,7 +43,7 @@ export const Profile = () => {
           .profile-card {
             background-color: #ffffff;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 16px rgba(0, 0, 0, 0.2);
             padding: 20px;
             width: 100%;
             max-width: 800px;
