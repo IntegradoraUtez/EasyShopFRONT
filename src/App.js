@@ -28,6 +28,7 @@ function App() {
         <Route path="/product" element={<ProductScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/user/update" element={<UpdateUserScreen />} />
+        <Route path="/user/manageAddresses" element={<UpdateUserScreen />} />
       </Routes>
       <Footer/>
     </BrowserRouter>
