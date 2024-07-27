@@ -98,6 +98,8 @@ export default function ProductsCard() {
     ]);
 
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
     const [newProduct, setNewProduct] = useState({
         name: '',
         description: '',
@@ -111,14 +113,31 @@ export default function ProductsCard() {
     const handleAddClose = () => setShowAddModal(false);
     const handleAddShow = () => setShowAddModal(true);
 
+    const handleEditClose = () => setShowEditModal(false);
+    const handleEditShow = (product) => {
+        setSelectedProduct(product);
+        setNewProduct(product);
+        setShowEditModal(true);
+    };
+
     const handleAddProduct = () => {
         setProducts([...products, { ...newProduct, price: parseFloat(newProduct.price), discount: parseFloat(newProduct.discount), stock: parseInt(newProduct.stock) }]);
         handleAddClose();
     };
 
+    const handleEditProduct = () => {
+        setProducts(products.map(product => product === selectedProduct ? newProduct : product));
+        handleEditClose();
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewProduct({ ...newProduct, [name]: value });
+    };
+
+    const handleDeactivateProduct = (product) => {
+        // Lógica para desactivar el producto
+        console.log('Desactivar producto', product);
     };
 
     const sortProducts = (criteria) => {
@@ -198,8 +217,8 @@ export default function ProductsCard() {
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
                                     <Card.Text><strong>Categoría:</strong> {product.category}</Card.Text>
                                     <div className="d-flex justify-content-between mt-2">
-                                        <Button variant="secondary" size="sm">Editar</Button>
-                                        <Button variant="danger" size="sm">Desactivar</Button>
+                                        <Button variant="secondary" size="sm" onClick={() => handleEditShow(product)}>Editar</Button>
+                                        <Button variant="danger" size="sm" onClick={() => handleDeactivateProduct(product)}>Desactivar</Button>
                                     </div>
                                 </Card.Body>
                             </Card>
@@ -251,6 +270,53 @@ export default function ProductsCard() {
                     </Button>
                     <Button variant="primary" onClick={handleAddProduct}>
                         Agregar Producto
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal para editar producto */}
+            <Modal show={showEditModal} onHide={handleEditClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Editar Producto</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formProductName">
+                            <Form.Label>Nombre del Producto</Form.Label>
+                            <Form.Control type="text" placeholder="Nombre del Producto" name="name" value={newProduct.name} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formProductDescription">
+                            <Form.Label>Descripción</Form.Label>
+                            <Form.Control type="text" placeholder="Descripción" name="description" value={newProduct.description} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formProductPrice">
+                            <Form.Label>Precio</Form.Label>
+                            <Form.Control type="number" placeholder="Precio" name="price" value={newProduct.price} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formProductDiscount">
+                            <Form.Label>Descuento</Form.Label>
+                            <Form.Control type="number" placeholder="Descuento" name="discount" value={newProduct.discount} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formProductStock">
+                            <Form.Label>Stock</Form.Label>
+                            <Form.Control type="number" placeholder="Stock" name="stock" value={newProduct.stock} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formProductImage">
+                            <Form.Label>URL de la Imagen</Form.Label>
+                            <Form.Control type="text" placeholder="URL de la Imagen" name="image" value={newProduct.image} onChange={handleInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formProductCategory">
+                            <Form.Label>Categoría</Form.Label>
+                            <Form.Control type="text" placeholder="Categoría" name="category" value={newProduct.category} onChange={handleInputChange} />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleEditClose}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={handleEditProduct}>
+                        Guardar Cambios
                     </Button>
                 </Modal.Footer>
             </Modal>
