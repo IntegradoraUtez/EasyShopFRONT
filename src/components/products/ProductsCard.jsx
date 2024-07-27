@@ -9,7 +9,7 @@ export default function ProductsCard() {
             name: "Producto 1",
             description: "Una descripción rápida del producto 1.",
             price: 19.99,
-            discount: 0.1, // 10% de descuento
+            discount: 0.1, 
             stock: 15,
             image: "https://via.placeholder.com/150",
             category: "Categoría 1"
@@ -18,7 +18,7 @@ export default function ProductsCard() {
             name: "Producto 2",
             description: "Otra descripción rápida del producto 2.",
             price: 29.99,
-            discount: 0.2, // 20% de descuento
+            discount: 0.2, 
             stock: 8,
             image: "https://via.placeholder.com/150",
             category: "Categoría 2"
