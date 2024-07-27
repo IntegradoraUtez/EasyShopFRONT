@@ -1,11 +1,9 @@
-//Aaron Galarza
 import React from 'react'
+import UpdateProfile from './../components/profile/UpdateProfileComponents'
 
 function UpdateUserScreen() {
   return (
-    <div>
-      
-    </div>
+      <UpdateProfile/>
   )
 }
 

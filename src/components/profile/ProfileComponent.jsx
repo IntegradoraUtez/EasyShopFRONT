@@ -6,7 +6,7 @@ export const Profile = () => {
     const navigate = useNavigate();
 
     const handleUpdateProfile = () => {
-        navigate('/updateProfile');
+        navigate('/user/update');
     };
     const handleManageAddresses = () => {
         navigate('/user/manageAddresses');
@@ -28,7 +28,7 @@ export const Profile = () => {
                     </div>
                 </div>
                 <div className="button-container">
-                    <button className="profile-button">Actualizar información personal</button>
+                    <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
                     <button className="profile-button">Cambiar contraseña</button>
                     <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
                     <button className="profile-button">Administrar tarjetas de pago</button>
