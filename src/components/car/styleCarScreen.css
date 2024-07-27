@@ -1,0 +1,50 @@
+.button-product-category {
+    margin-top: 2%;
+    width: 50%;
+    padding: 5px;
+    background-color: #ECA4AF;
+    color: #ffffff;
+    border: 1px solid #ECA4AF;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
+  }
+  
+  .button-product-category:hover {
+    background-color: #9B414F;
+  }
+  
+
+
+  .responsive-text{
+    font-size: 1rem; /* Tamaño de texto predeterminado */
+  }
+  
+  .responsive-button {
+    font-size: 16px; /* Tamaño de texto predeterminado */
+  }
+  
+  /* Ajustes de texto para pantallas medianas */
+  @media (max-width: 768px) {
+    .responsive-text {
+      font-size: 0.875rem;
+    }
+  
+    .responsive-button {
+      font-size: 14px;
+    }
+  }
+  
+  /* Ajustes de texto para pantallas pequeñas */
+  @media (max-width: 576px) {
+    .responsive-tex {
+      font-size: 0.75rem;
+    }
+  
+    .responsive-button {
+      font-size: 12px;
+    }
+  }
+ 
+  

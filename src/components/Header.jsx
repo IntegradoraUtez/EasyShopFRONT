@@ -25,7 +25,7 @@ function Header() {
                             <BsPersonCircle size={25} />
                         </button>
                         <button className="btn">
-                            <Link to="/cart">
+                            <Link to="/car">
                                 <BsFillCartDashFill size={25} />
                             </Link>
                         </button>

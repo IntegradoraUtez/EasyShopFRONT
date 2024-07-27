@@ -1,5 +1,8 @@
 import React from 'react';
-import { Row, Col, Card, Accordion } from 'react-bootstrap';
+import { Row, Col, Card, Accordion, Button } from 'react-bootstrap';
+import { BsXCircle } from "react-icons/bs";
+import { Link } from 'react-router-dom';
+import './styleCarScreen.css';
 
 function CardsCarScreen() {
     const purchaseData = [
@@ -22,7 +25,7 @@ function CardsCarScreen() {
         {
             image: "https://pantalonesdemezclilla.mx/cdn/shop/files/tiro-alto-novio-azul-mezclilla-jeans-cintura-simetrica-mujer_8_2cc7ff9a-4287-4817-8665-d2d8e2c99641.jpg?v=1705528720",
             datePurchase: "2024-07-27",
-            nameProduct: "Product 2",
+            nameProduct: "Product 3",
             priceProduct: "$20.00",
             totalPurchase: "$20.00",
             discount: 10
@@ -30,54 +33,39 @@ function CardsCarScreen() {
     ];
 
     return (
-        <Accordion defaultActiveKey="0">
+        <Accordion defaultActiveKey="0" className='mt-3 centered-container'>
             {purchaseData.map((purchase, index) => (
                 <Accordion.Item eventKey={index.toString()} key={index}>
                     <Accordion.Header>{purchase.nameProduct}</Accordion.Header>
                     <Accordion.Body>
                         <Card className="my-3">
                             <Card.Body>
-                            <Row className="align-items-center">
-                                    <Col xs={12} md={4} className="text-center my-2">
-                                        Producto
-                                    </Col>
-                                    <Col xs={12} md={4} className="text-center my-2">
-                                        <Row className="align-items-center">
-                                            <Col className="text-center">Nombre</Col>
-                                            <Col className="text-center">Precio</Col>
-                                            {purchase.discount > 0 && (
-                                                <Col className="text-center">
-                                                    Descuento
-                                                </Col>
-                                            )}
-                                        </Row>
-                                    </Col>
-                                    <Col xs={12} md={4} className="text-center my-2">
-                                        <Row className="align-items-center">
-                                            <Col className="text-center">Fecha Compra</Col>
-                                            <Col className="text-center">Total</Col>
-                                        </Row>
-                                    </Col>
-                                </Row>
                                 <Row className="align-items-center">
-                                    <Col xs={12} md={4} className="text-center my-2">
+                                    <Col xs={12} md={1} className="text-center my-2">
+                                        <Button variant="link">
+                                            <Link>
+                                                <BsXCircle size={25} />
+                                            </Link>
+                                        </Button>
+                                    </Col>
+                                    <Col xs={12} md={3} className="text-center my-2">
                                         <img style={{ height: 120, width: 110 }} src={purchase.image} alt={purchase.nameProduct} />
                                     </Col>
-                                    <Col xs={12} md={4} className="text-center my-2">
+                                    <Col xs={12} md={4} className="text-center my-2 responsive-text">
                                         <Row className="align-items-center">
-                                            <Col className="text-center">{purchase.nameProduct}</Col>
-                                            <Col className="text-center">{purchase.priceProduct}</Col>
+                                            <Col className="text-center responsive-text">{purchase.nameProduct}</Col>
+                                            <Col className="text-center responsive-text">{purchase.priceProduct}</Col>
                                             {purchase.discount > 0 && (
-                                                <Col className="text-center text-danger">
+                                                <Col className="text-center text-danger responsive-text">
                                                     {purchase.discount}%
                                                 </Col>
                                             )}
                                         </Row>
                                     </Col>
-                                    <Col xs={12} md={4} className="text-center my-2">
+                                    <Col xs={12} md={3} className="text-center my-2 responsive-text">
                                         <Row className="align-items-center">
-                                            <Col className="text-center">{purchase.datePurchase}</Col>
-                                            <Col className="text-center">{purchase.totalPurchase}</Col>
+                                            <Col className="text-center responsive-text">{purchase.datePurchase}</Col>
+                                            <Col className="text-center responsive-text">{purchase.totalPurchase}</Col>
                                         </Row>
                                     </Col>
                                 </Row>

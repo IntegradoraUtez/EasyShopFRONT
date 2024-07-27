@@ -73,6 +73,17 @@
     margin-top: 60%;
   }
   
+  .custom-link {
+    color: blue;
+    text-decoration: none; /* No underline */
+    font-size: 1rem;
+}
+
+.custom-link:hover {
+    text-decoration: none; /* No underline on hover */
+    color: rgb(15, 121, 251);
+}
+
   .button-product-category {
     margin-top: 2%;
     width: 50%;

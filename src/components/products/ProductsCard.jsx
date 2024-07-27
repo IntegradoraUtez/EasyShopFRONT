@@ -2,8 +2,16 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function ProductsCard() {
+    const navigate = useNavigate();
+
+    const handleProcessCarBuy = () => {
+        navigate('/car')
+    }
+
+
     const [products, setProducts] = useState([
         {
             name: "Producto 1",
@@ -179,7 +187,7 @@ export default function ProductsCard() {
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
                                     <Card.Text><strong>Categoría:</strong> {product.category}</Card.Text>
                                     <div className="d-flex justify-content-center">
-                                        <Button variant="primary">Agregar al carrito</Button>
+                                        <Button variant="primary" onClick={handleProcessCarBuy}>Agregar al carrito</Button>
                                     </div>
                                 </Card.Body>
                             </Card>
@@ -204,7 +212,7 @@ export default function ProductsCard() {
                     <Button variant="secondary" onClick={handleClose}>
                         Cerrar
                     </Button>
-                    <Button variant="primary">
+                    <Button variant="primary" onClick={handleProcessCarBuy}>
                         Agregar al carrito de compra
                     </Button>
                 </Modal.Footer>
