@@ -8,22 +8,22 @@ function AdminDashboardComponents() {
         {
             categoria: 'Administrar Productos',
             imagen: 'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
-            enlace: '/admin/productos'
+            enlace: '/admin/products'
         },
         {
             categoria: 'Administrar Usuarios',
             imagen: 'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
-            enlace: '/admin/usuarios'
+            enlace: '/admin/users'
         },
         {
             categoria: 'Administrar Categorias',
             imagen: 'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg',
-            enlace: '/admin/categorias'
+            enlace: '/admin/categories'
         },
         {
             categoria: 'Historial de Compras',
             imagen: 'https://uvn-brightspot.s3.amazonaws.com/assets/vixes/btg/tech.batanga.com/files/Cinco-excelentes-sitios-para-comprar-ropa-y-accesorios-1.jpg',
-            enlace: '/admin/historial'
+            enlace: '/admin/purchases'
         }
     ];
 
