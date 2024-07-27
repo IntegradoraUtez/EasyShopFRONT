@@ -3,39 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import iconProfile from './profileIcon.png';
 
 export const Profile = () => {
+    const navigate = useNavigate();
 
-  return (
-    <div className="profile-container">
-      <div className="profile-card">
-        <div className="profile-header">
-          <div className="image-wrapper">
-            <img src={iconProfile} alt="Perfil" className="profile-image" />
-          </div>
-          <div className="profile-details">
-            <h1>Nombre de Usuario</h1>
-            <p><strong>Correo:</strong> usuario@ejemplo.com</p>
-            <p><strong>Fecha de Nacimiento:</strong> 01/01/1990</p>
-            <p><strong>Género:</strong> Masculino</p>
-            <p><strong>Tipo de Usuario:</strong> Administrador</p>
-            <p><strong>Nombre Completo:</strong> Juan Pérez</p>
-          </div>
-        </div>
-        <div className="button-container">
-          <button className="profile-button" >Actualizar información personal</button>
-          <button className="profile-button" >Cambiar contraseña</button>
-          <button className="profile-button">Administrar direcciones de entrega</button>
-          <button className="profile-button">Administrar tarjetas de pago</button>
-        </div>
-      </div>
+    const handleUpdateProfile = () => {
+        navigate('/user/update');
+    };
+    const handleManageAddresses = () => {
+        navigate('/user/manageAddresses');
+    };
+    return (
+        <div className="profile-container">
+            <div className="profile-card">
+                <div className="profile-header">
+                    <div className="image-wrapper">
+                        <img src={iconProfile} alt="Perfil" className="profile-image" />
+                    </div>
+                    <div className="profile-details">
+                        <h1>Nombre de Usuario</h1>
+                        <p><strong>Correo:</strong> usuario@ejemplo.com</p>
+                        <p><strong>Fecha de Nacimiento:</strong> 01/01/1990</p>
+                        <p><strong>Género:</strong> Masculino</p>
+                        <p><strong>Tipo de Usuario:</strong> Administrador</p>
+                        <p><strong>Nombre Completo:</strong> Juan Pérez</p>
+                    </div>
+                </div>
+                <div className="button-container">
+                    <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
+                    <button className="profile-button">Cambiar contraseña</button>
+                    <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
+                    <button className="profile-button">Administrar tarjetas de pago</button>
+                </div>
+            </div>
 
 
-      <style>
-        {`
+            <style>
+                {`
           .profile-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             margin: 0;
             box-sizing: border-box;
             padding: 10px;
@@ -44,7 +50,7 @@ export const Profile = () => {
           .profile-card {
             background-color: #ffffff;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 16px rgba(0, 0, 0, 0.2);
             padding: 20px;
             width: 100%;
             max-width: 800px;
@@ -153,9 +159,9 @@ export const Profile = () => {
 
 
         `}
-      </style>
-    </div>
-  );
+            </style>
+        </div>
+    );
 };
 
 export default Profile;
