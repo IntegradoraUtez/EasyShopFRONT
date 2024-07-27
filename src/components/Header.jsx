@@ -10,7 +10,7 @@ function Header() {
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
                 <div className="container-fluid">
                     <Link className="navbar-brand" to="/">
-                        <img src={Logo} style={{height:90, width:150}} alt="EasyShop" className="imagenLogo"/>
+                        <img src={Logo} style={{ height: 90, width: 150 }} alt="EasyShop" className="imagenLogo" />
                     </Link>
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav me-auto">
@@ -22,7 +22,9 @@ function Header() {
                             </li>
                         </ul>
                         <button className="btn" >
-                            <BsPersonCircle size={25} />
+                            <Link to="/profile">
+                                <BsPersonCircle size={25} />
+                            </Link>
                         </button>
                         <button className="btn">
                             <Link to="/car">
