@@ -1,10 +1,16 @@
 import React from 'react'
+import { Container, Row, Col } from 'react-bootstrap';
+import CardsManageCards from '../components/manageCards/CardsManageCards';
 
 function ManageCardsScreen() {
   return (
-    <div>
-      
-    </div>
+    <Container>
+      <Row>
+        <Col className='mt-2 mb-5'>
+          <CardsManageCards/>
+        </Col>
+      </Row>
+    </Container>
   )
 }
 

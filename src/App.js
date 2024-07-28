@@ -23,7 +23,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
         <Route path="/admin/products" element={<AdminProductScreen />} />
         <Route path="/admin/purchases" element={<AdminPurchaseScreen />} />
-        <Route path="/card/insert" element={<CardInsertScreen />} />
+        <Route path="/user/insertCard" element={<CardInsertScreen />} />
         <Route path="/car" element={<CarScreen />} />
         <Route path="/" element={<HomeScreen />} />
         <Route path="/pay" element={<PayScreen />} />
