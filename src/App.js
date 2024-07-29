@@ -13,6 +13,7 @@ import UpdateUserScreen from "./views/UpdateUserScreen.jsx";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import ManageAddressesScreen from "./views/ManageAddressesScreen.jsx";
+import ManageCardsScreen from "./views/ManageCardsScreen.jsx";
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
         <Route path="/admin/products" element={<AdminProductScreen />} />
         <Route path="/admin/purchases" element={<AdminPurchaseScreen />} />
-        <Route path="/card/insert" element={<CardInsertScreen />} />
+        <Route path="/user/insertCard" element={<CardInsertScreen />} />
         <Route path="/car" element={<CarScreen />} />
         <Route path="/" element={<HomeScreen />} />
         <Route path="/pay" element={<PayScreen />} />
@@ -31,8 +32,8 @@ function App() {
         <Route path="/user/update" element={<UpdateUserScreen />} />
         <Route path="/admin/users" element={<AdminDashboardScreen />} />
         <Route path="/admin/categories" element={<AdminDashboardScreen />} />
-        <Route path="/admin/users" element={<AdminDashboardScreen />} />
-        <Route path="/admin/categories" element={<AdminDashboardScreen />} />
+        <Route path="/user/manageAddresses" element={<ManageAddressesScreen />} />
+        <Route path="/user/manageCards" element={<ManageCardsScreen />} />
       </Routes>
       <Footer />
     </BrowserRouter>
