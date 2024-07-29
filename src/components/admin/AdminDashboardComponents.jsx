@@ -1,9 +1,29 @@
-import { React, Fragment } from 'react';
-import { Row, Col, Card } from 'react-bootstrap';
+import React, { useState, Fragment } from 'react';
+import { Row, Col, Card, Modal, Form, Button } from 'react-bootstrap';
 import '../landing/styleHomeScreen.css';
 import { Link } from 'react-router-dom';
 
 function AdminDashboardComponents() {
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [newCategory, setNewCategory] = useState({
+        name: '',
+        image: ''
+    });
+
+    const handleCategoryShow = () => setShowCategoryModal(true);
+    const handleCategoryClose = () => setShowCategoryModal(false);
+
+    const handleCategoryInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewCategory({ ...newCategory, [name]: value });
+    };
+
+    const handleAddCategory = () => {
+        // Lógica para agregar una categoría
+        console.log('Agregar categoría', newCategory);
+        handleCategoryClose();
+    };
+
     const categorias = [
         {
             categoria: 'Administrar Productos',
@@ -18,7 +38,7 @@ function AdminDashboardComponents() {
         {
             categoria: 'Administrar Categorias',
             imagen: 'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg',
-            enlace: '/admin/categories'
+            enlace: ''
         },
         {
             categoria: 'Historial de Compras',
@@ -28,23 +48,55 @@ function AdminDashboardComponents() {
     ];
 
     return (
-        <Row className="align-items-center justify-content-center mb-4 mt-2">
-            {categorias.map((item, index) => (
-                <Col key={index} xs={12} md={6} className="d-flex justify-content-center mb-3 mb-md-0">
-                    <Card className="product-card mt-3">
-                        <Card.Img variant="top" src={item.imagen} />
-                        <Card.ImgOverlay className="card-overlay">
-                            <Col className="textCard">
-                                <Card.Title className="responsive-text-card">{item.categoria}</Card.Title>
-                                <Link to={item.enlace}>
-                                    <button className='button-product-category responsive-button'>Ingresar</button>
-                                </Link>
-                            </Col>
-                        </Card.ImgOverlay>
-                    </Card>
-                </Col>
-            ))}
-        </Row>
+        <Fragment>
+            <Row className="align-items-center justify-content-center mb-4 mt-2">
+                {categorias.map((item, index) => (
+                    <Col key={index} xs={12} md={6} className="d-flex justify-content-center mb-3 mb-md-0">
+                        <Card className="product-card mt-3">
+                            <Card.Img variant="top" src={item.imagen} />
+                            <Card.ImgOverlay className="card-overlay">
+                                <Col className="textCard">
+                                    <Card.Title className="responsive-text-card">{item.categoria}</Card.Title>
+                                    {item.categoria === 'Administrar Categorias' ? (
+                                        <button className='button-product-category responsive-button' onClick={handleCategoryShow}>Ingresar</button>
+                                    ) : (
+                                        <Link to={item.enlace}>
+                                            <button className='button-product-category responsive-button'>Ingresar</button>
+                                        </Link>
+                                    )}
+                                </Col>
+                            </Card.ImgOverlay>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
+            <Modal show={showCategoryModal} onHide={handleCategoryClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Administrar Categorías</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formCategoryName">
+                            <Form.Label>Nombre de la Categoría</Form.Label>
+                            <Form.Control type="text" placeholder="Nombre de la Categoría" name="name" value={newCategory.name} onChange={handleCategoryInputChange} />
+                        </Form.Group>
+                        <Form.Group controlId="formCategoryImage">
+                            <Form.Label>URL de la Imagen</Form.Label>
+                            <Form.Control type="text" placeholder="URL de la Imagen" name="image" value={newCategory.image} onChange={handleCategoryInputChange} />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCategoryClose}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={handleAddCategory}>
+                        Agregar Categoría
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </Fragment>
     );
 }
 
