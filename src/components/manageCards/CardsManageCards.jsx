@@ -10,14 +10,14 @@ const CardsData = [
         name: "Tarjeta BBVA",
         cardNumber: "1234 5678 9012 3456",
         ownerName: "Juan Pérez",
-        cardType: "Visa",
+        cardType: "Credito",
         postalCode: "12345"
     },
     {
         name: "Tarjeta NU",
         cardNumber: "9876 5432 1098 7654",
         ownerName: "Ana García",
-        cardType: "Mastercard",
+        cardType: "Debito",
         postalCode: "67890"
     },
 ];
