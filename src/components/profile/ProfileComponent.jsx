@@ -18,6 +18,9 @@ export const Profile = () => {
   const handleManageAddresses = () => {
     navigate('/user/manageAddresses');
   };
+  const handleManageCards = () => {
+    navigate('/user/manageCards');
+  };
 
   return (
     <div className="profile-container">
@@ -39,7 +42,7 @@ export const Profile = () => {
           <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
           <button className="profile-button" onClick={handleShow}>Actualizar contraseña</button>
           <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
-          <button className="profile-button">Administrar tarjetas de pago</button>
+          <button className="profile-button" onClick={handleManageCards}>Administrar tarjetas de pago</button>
         </div>
       </div>
 
