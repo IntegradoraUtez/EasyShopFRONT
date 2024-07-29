@@ -1,43 +1,83 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import iconProfile from './profileIcon.png';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
 
 export const Profile = () => {
-    const navigate = useNavigate();
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+  const navigate = useNavigate();
 
-    const handleUpdateProfile = () => {
-        navigate('/user/update');
-    };
-    const handleManageAddresses = () => {
-        navigate('/user/manageAddresses');
-    };
-    return (
-        <div className="profile-container">
-            <div className="profile-card">
-                <div className="profile-header">
-                    <div className="image-wrapper">
-                        <img src={iconProfile} alt="Perfil" className="profile-image" />
-                    </div>
-                    <div className="profile-details">
-                        <h1>Nombre de Usuario</h1>
-                        <p><strong>Correo:</strong> usuario@ejemplo.com</p>
-                        <p><strong>Fecha de Nacimiento:</strong> 01/01/1990</p>
-                        <p><strong>Género:</strong> Masculino</p>
-                        <p><strong>Tipo de Usuario:</strong> Administrador</p>
-                        <p><strong>Nombre Completo:</strong> Juan Pérez</p>
-                    </div>
-                </div>
-                <div className="button-container">
-                    <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
-                    <button className="profile-button">Cambiar contraseña</button>
-                    <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
-                    <button className="profile-button">Administrar tarjetas de pago</button>
-                </div>
-            </div>
+  const handleUpdateProfile = () => {
+    navigate('/user/update');
+  };
 
+  const handleManageAddresses = () => {
+    navigate('/user/manageAddresses');
+  };
+  const handleManageCards = () => {
+    navigate('/user/manageCards');
+  };
 
-            <style>
-                {`
+  return (
+    <div className="profile-container">
+      <div className="profile-card">
+        <div className="profile-header">
+          <div className="image-wrapper">
+            <img src={iconProfile} alt="Perfil" className="profile-image" />
+          </div>
+          <div className="profile-details">
+            <h1>Nombre de Usuario</h1>
+            <p><strong>Correo:</strong> usuario@ejemplo.com</p>
+            <p><strong>Fecha de Nacimiento:</strong> 01/01/1990</p>
+            <p><strong>Género:</strong> Masculino</p>
+            <p><strong>Tipo de Usuario:</strong> Administrador</p>
+            <p><strong>Nombre Completo:</strong> Juan Pérez</p>
+          </div>
+        </div>
+        <div className="button-container">
+          <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
+          <button className="profile-button" onClick={handleShow}>Actualizar contraseña</button>
+          <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
+          <button className="profile-button" onClick={handleManageCards}>Administrar tarjetas de pago</button>
+        </div>
+      </div>
+
+      <Modal show={show} onHide={handleClose} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Actualizar Contraseña</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="currentPassword">
+              <Form.Label>Contraseña Actual</Form.Label>
+              <Form.Control type="password" placeholder="Ingrese la contraseña actual" />
+            </Form.Group>
+            <Form.Group controlId="newPassword" className="mt-3">
+              <Form.Label>Nueva Contraseña</Form.Label>
+              <Form.Control type="password" placeholder="Ingrese la nueva contraseña" />
+            </Form.Group>
+            <Form.Group controlId="confirmPassword" className="mt-3">
+              <Form.Label>Confirmar Nueva Contraseña</Form.Label>
+              <Form.Control type="password" placeholder="Confirme la nueva contraseña" />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose} className="modal-button">
+            Cancelar
+          </Button>
+          <Button variant="secondary" onClick={handleClose} className="modal-button">
+            Guardar Cambios
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <style>
+        {`
           .profile-container {
             display: flex;
             justify-content: center;
@@ -132,11 +172,32 @@ export const Profile = () => {
           }
 
           .profile-button:hover {
-            background-color: #ECA4AF;
+            background-color: #9B414F;
             transform: scale(1.05);
           }
 
-        
+          .modal-button {
+            background-color: #ECA4AF;
+            color: #ffffff;
+          }
+
+          .modal-button:hover {
+            background-color: #9B414F;
+          }
+
+          .modal-header {
+            border-bottom: 1px solid #ECA4AF;
+          }
+
+          .modal-title {
+            color: #ECA4AF;
+          }
+
+          .modal-body {
+            padding: 20px;
+          }
+
+
           @media (max-width: 600px) {
             .profile-header {
               flex-direction: column;
@@ -156,12 +217,11 @@ export const Profile = () => {
             .profile-button {
               font-size: 12px;
             }
-
-
+          }
         `}
-            </style>
-        </div>
-    );
+      </style>
+    </div>
+  );
 };
 
 export default Profile;
