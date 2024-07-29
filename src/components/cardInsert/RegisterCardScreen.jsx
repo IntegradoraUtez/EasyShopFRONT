@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Row, Col, Card, Form, Button } from 'react-bootstrap';
 import './registerCardScreen.css';
 import { useNavigate } from 'react-router-dom';
-//import chip from '../../assets/tarjeta-de-credito.png';
-//import visa from '../../assets/simbolos.png';
+import chip from '../../assets/tarjeta-de-credito.png';
+import visa from '../../assets/simbolos.png';
 import {
     FuncionNumeroTarjeta,
     FuncionIdentificarTipoTarjeta,
