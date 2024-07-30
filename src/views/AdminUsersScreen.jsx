@@ -1,9 +1,9 @@
 import React from 'react'
-import ProfileComponents from './../components/profile/ProfileComponent'
+import AdminUsersScreenComponents from '../components/admin/AdminUsersScreenComponents'
 
 function AdminUsersScreen() {
   return (
-      <ProfileComponents/>
+      <AdminUsersScreenComponents/>
   )
 }
 
