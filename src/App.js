@@ -31,11 +31,9 @@ function App() {
         <Route path="/product" element={<ProductScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/user/update" element={<UpdateUserScreen />} />
-        <Route path="/admin/users" element={<AdminDashboardScreen />} />
-        <Route path="/admin/categories" element={<AdminDashboardScreen />} />
         <Route path="/user/manageAddresses" element={<ManageAddressesScreen />} />
         <Route path="/user/manageCards" element={<ManageCardsScreen />} />
-        <Route path="/admin/adminUsers" element={<AdminUsersScreen />} />
+        <Route path="/admin/users" element={<AdminUsersScreen />} />
       </Routes>
       <Footer />
     </BrowserRouter>

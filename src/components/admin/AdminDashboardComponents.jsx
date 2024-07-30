@@ -33,7 +33,7 @@ function AdminDashboardComponents() {
         {
             categoria: 'Administrar Usuarios',
             imagen: 'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
-            enlace: '/admin/adminUsers'
+            enlace: '/admin/users'
         },
         {
             categoria: 'Administrar Categorias',
