@@ -14,6 +14,7 @@ import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import ManageAddressesScreen from "./views/ManageAddressesScreen.jsx";
 import ManageCardsScreen from "./views/ManageCardsScreen.jsx";
+import AdminUsersScreen from "./views/AdminUsersScreen.jsx";
 
 function App() {
   return (
@@ -30,10 +31,9 @@ function App() {
         <Route path="/product" element={<ProductScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/user/update" element={<UpdateUserScreen />} />
-        <Route path="/admin/users" element={<AdminDashboardScreen />} />
-        <Route path="/admin/categories" element={<AdminDashboardScreen />} />
         <Route path="/user/manageAddresses" element={<ManageAddressesScreen />} />
         <Route path="/user/manageCards" element={<ManageCardsScreen />} />
+        <Route path="/admin/users" element={<AdminUsersScreen />} />
       </Routes>
       <Footer />
     </BrowserRouter>
