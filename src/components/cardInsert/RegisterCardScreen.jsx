@@ -77,10 +77,10 @@ function NewCard() {
                         <Card.Body>
                             <Row>
                                 <Col className="text-left">
-                                    <img src="" alt="Chip" className="chip-image" />
+                                    <img src={chip} alt="Chip" className="chip-image" />
                                 </Col>
                                 <Col className="text-right">
-                                    <img src="" alt="Visa" className="visa-image" />
+                                    <img src={visa} alt="Visa" className="visa-image" />
                                 </Col>
                             </Row>
                             <div className="bank-card">

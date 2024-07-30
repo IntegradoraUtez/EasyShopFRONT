@@ -66,3 +66,15 @@
         font-size: 12px;
     }
 }
+
+
+.modal-button {
+    background-color: #ECA4AF;
+    color: #ffffff;
+    border-color: #ECA4AF;
+  }
+
+  .modal-button:hover {
+    background-color: #9B414F;
+    border-color: #ECA4AF;
+  }
