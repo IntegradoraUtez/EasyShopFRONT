@@ -38,7 +38,7 @@ function AdminDashboardComponents() {
         {
             categoria: 'Administrar Categorias',
             imagen: 'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg',
-            enlace: ''
+            enlace: '/admin/category'
         },
         {
             categoria: 'Historial de Compras',
@@ -57,13 +57,9 @@ function AdminDashboardComponents() {
                             <Card.ImgOverlay className="card-overlay">
                                 <Col className="textCard">
                                     <Card.Title className="responsive-text-card">{item.categoria}</Card.Title>
-                                    {item.categoria === 'Administrar Categorias' ? (
-                                        <button className='button-product-category responsive-button' onClick={handleCategoryShow}>Ingresar</button>
-                                    ) : (
                                         <Link to={item.enlace}>
                                             <button className='button-product-category responsive-button'>Ingresar</button>
                                         </Link>
-                                    )}
                                 </Col>
                             </Card.ImgOverlay>
                         </Card>

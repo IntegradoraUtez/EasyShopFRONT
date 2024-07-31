@@ -3,6 +3,7 @@ import "./App.css";
 import AdminDashboardScreen from "./views/AdminDashboardScreen.jsx";
 import AdminProductScreen from "./views/AdminProductScreen.jsx";
 import AdminPurchaseScreen from "./views/AdminPurchaseScreen.jsx";
+import AdminCategoryScreen from "./views/AdminCategoryScreen.jsx";
 import CardInsertScreen from "./views/CardInsertScreen.jsx";
 import CarScreen from "./views/CarScreen.jsx";
 import HomeScreen from "./views/HomeScreen.jsx";
@@ -24,6 +25,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
         <Route path="/admin/products" element={<AdminProductScreen />} />
         <Route path="/admin/purchases" element={<AdminPurchaseScreen />} />
+        <Route path="/admin/category" element={<AdminCategoryScreen />} />
         <Route path="/user/insertCard" element={<CardInsertScreen />} />
         <Route path="/car" element={<CarScreen />} />
         <Route path="/" element={<HomeScreen />} />
