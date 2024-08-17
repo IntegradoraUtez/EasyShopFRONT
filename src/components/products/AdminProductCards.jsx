@@ -11,7 +11,7 @@ export default function ProductsCard() {
             price: 19.99,
             discount: 0.1, // 10% de descuento
             stock: 15,
-            image: "https://via.placeholder.com/150",
+            image: "https://m.media-amazon.com/images/I/61k+1UDe73L.jpg",
             category: "Categoría 1"
         },
         {
@@ -20,7 +20,7 @@ export default function ProductsCard() {
             price: 29.99,
             discount: 0.2, // 20% de descuento
             stock: 8,
-            image: "https://via.placeholder.com/150",
+            image: "https://i.pinimg.com/736x/e4/b1/84/e4b1841cdda985a28432ab9d5492c12d.jpg",
             category: "Categoría 2"
         },
         {
@@ -141,23 +141,23 @@ export default function ProductsCard() {
     };
 
     const handleAddProduct = () => {
-        setProducts([...products, {
-            ...newProduct,
-            price: parseFloat(newProduct.price),
-            discount: parseFloat(newProduct.discount),
-            stock: parseInt(newProduct.stock)
+        setProducts([...products, { 
+            ...newProduct, 
+            price: parseFloat(newProduct.price), 
+            discount: parseFloat(newProduct.discount), 
+            stock: parseInt(newProduct.stock) 
         }]);
         handleAddClose();
     };
 
     const handleEditProduct = () => {
-        setProducts(products.map(product =>
-            product === selectedProduct
-                ? {
-                    ...newProduct,
-                    price: parseFloat(newProduct.price),
-                    discount: parseFloat(newProduct.discount),
-                    stock: parseInt(newProduct.stock)
+        setProducts(products.map(product => 
+            product === selectedProduct 
+                ? { 
+                    ...newProduct, 
+                    price: parseFloat(newProduct.price), 
+                    discount: parseFloat(newProduct.discount), 
+                    stock: parseInt(newProduct.stock) 
                 }
                 : product
         ));
@@ -167,6 +167,18 @@ export default function ProductsCard() {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewProduct({ ...newProduct, [name]: value });
+    };
+
+    const handleInputNumber = (e) => {
+        const { name, value } = e.target;
+        const numericValue = value.replace(/[^0-9.]/g, '').slice(0, 8); // Permitir solo números y hasta 8 dígitos
+        setNewProduct({ ...newProduct, [name]: numericValue });
+    };
+
+    const handleInputText = (e) => {
+        const { name, value } = e.target;
+        const maxLength = name === 'name' ? 30 : name === 'description' ? 50 : 255; // Ajusta longitud máxima según el campo
+        setNewProduct({ ...newProduct, [name]: value.slice(0, maxLength) });
     };
 
     const handleDeactivateProduct = (product) => {
@@ -245,7 +257,7 @@ export default function ProductsCard() {
                     {products.map((product, index) => (
                         <Col key={index} md={3} className="mb-4">
                             <Card>
-                                <Card.Img variant="top" src={product.image} />
+                                <Card.Img className="card-img" variant="top" src={product.image} />
                                 <Card.Body>
                                     <Card.Title>{product.name}</Card.Title>
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
@@ -270,31 +282,77 @@ export default function ProductsCard() {
                     <Form>
                         <Form.Group controlId="formProductName">
                             <Form.Label>Nombre del Producto</Form.Label>
-                            <Form.Control type="text" placeholder="Nombre del Producto" name="name" value={newProduct.name} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Nombre del Producto" 
+                                name="name" 
+                                value={newProduct.name} 
+                                onChange={handleInputText} 
+                                maxLength={30} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductDescription">
                             <Form.Label>Descripción</Form.Label>
-                            <Form.Control type="text" placeholder="Descripción" name="description" value={newProduct.description} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Descripción" 
+                                name="description" 
+                                value={newProduct.description} 
+                                onChange={handleInputText} 
+                                maxLength={50} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductPrice">
                             <Form.Label>Precio</Form.Label>
-                            <Form.Control type="number" placeholder="Precio" name="price" value={newProduct.price} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Precio" 
+                                name="price" 
+                                value={newProduct.price} 
+                                onChange={handleInputNumber} 
+                                maxLength={8} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductDiscount">
                             <Form.Label>Descuento</Form.Label>
-                            <Form.Control type="number" placeholder="Descuento" name="discount" value={newProduct.discount} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Descuento" 
+                                name="discount" 
+                                value={newProduct.discount} 
+                                onChange={handleInputNumber} 
+                                maxLength={8} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductStock">
                             <Form.Label>Stock</Form.Label>
-                            <Form.Control type="number" placeholder="Stock" name="stock" value={newProduct.stock} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="number" 
+                                placeholder="Stock" 
+                                name="stock" 
+                                value={newProduct.stock} 
+                                onChange={handleInputNumber} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductImage">
                             <Form.Label>URL de la Imagen</Form.Label>
-                            <Form.Control type="text" placeholder="URL de la Imagen" name="image" value={newProduct.image} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="URL de la Imagen" 
+                                name="image" 
+                                value={newProduct.image} 
+                                onChange={handleInputChange} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductCategory">
                             <Form.Label>Categoría</Form.Label>
-                            <Form.Control type="text" placeholder="Categoría" name="category" value={newProduct.category} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Categoría" 
+                                name="category" 
+                                value={newProduct.category} 
+                                onChange={handleInputChange} 
+                            />
                         </Form.Group>
                     </Form>
                 </Modal.Body>
@@ -317,31 +375,77 @@ export default function ProductsCard() {
                     <Form>
                         <Form.Group controlId="formProductName">
                             <Form.Label>Nombre del Producto</Form.Label>
-                            <Form.Control type="text" placeholder="Nombre del Producto" name="name" value={newProduct.name} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Nombre del Producto" 
+                                name="name" 
+                                value={newProduct.name} 
+                                onChange={handleInputText} 
+                                maxLength={30} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductDescription">
                             <Form.Label>Descripción</Form.Label>
-                            <Form.Control type="text" placeholder="Descripción" name="description" value={newProduct.description} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Descripción" 
+                                name="description" 
+                                value={newProduct.description} 
+                                onChange={handleInputText} 
+                                maxLength={50} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductPrice">
                             <Form.Label>Precio</Form.Label>
-                            <Form.Control type="number" placeholder="Precio" name="price" value={newProduct.price} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Precio" 
+                                name="price" 
+                                value={newProduct.price} 
+                                onChange={handleInputNumber} 
+                                maxLength={8} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductDiscount">
                             <Form.Label>Descuento</Form.Label>
-                            <Form.Control type="number" placeholder="Descuento" name="discount" value={newProduct.discount} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Descuento" 
+                                name="discount" 
+                                value={newProduct.discount} 
+                                onChange={handleInputNumber} 
+                                maxLength={8} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductStock">
                             <Form.Label>Stock</Form.Label>
-                            <Form.Control type="number" placeholder="Stock" name="stock" value={newProduct.stock} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="number" 
+                                placeholder="Stock" 
+                                name="stock" 
+                                value={newProduct.stock} 
+                                onChange={handleInputNumber} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductImage">
                             <Form.Label>URL de la Imagen</Form.Label>
-                            <Form.Control type="text" placeholder="URL de la Imagen" name="image" value={newProduct.image} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="URL de la Imagen" 
+                                name="image" 
+                                value={newProduct.image} 
+                                onChange={handleInputChange} 
+                            />
                         </Form.Group>
                         <Form.Group controlId="formProductCategory">
                             <Form.Label>Categoría</Form.Label>
-                            <Form.Control type="text" placeholder="Categoría" name="category" value={newProduct.category} onChange={handleInputChange} />
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Categoría" 
+                                name="category" 
+                                value={newProduct.category} 
+                                onChange={handleInputChange} 
+                            />
                         </Form.Group>
                     </Form>
                 </Modal.Body>
