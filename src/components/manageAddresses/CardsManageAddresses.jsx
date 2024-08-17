@@ -25,6 +25,10 @@ const addressData = [
 function CardsManageAddresses() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
+    const [currentAddressIndex, setCurrentAddressIndex] = useState(null);
     const [newAddress, setNewAddress] = useState({
         name: '',
         country: '',
@@ -35,29 +39,67 @@ function CardsManageAddresses() {
     });
 
     const handleInsertAddress = () => {
+        setIsEditing(false);
+        setNewAddress({
+            name: '',
+            country: '',
+            state: '',
+            city: '',
+            street: '',
+            postal_code: ''
+        });
         setShowModal(true);
-    }
+    };
+
+    const handleEdit = (index) => {
+        setIsEditing(true);
+        setCurrentAddressIndex(index);
+        setNewAddress(addressData[index]);
+        setShowModal(true);
+    };
 
     const handleSaveAddress = () => {
-        // Here you would normally save the new address to your backend or state
-        console.log('New Address:', newAddress);
+        if (isEditing) {
+            // Actualizar la dirección existente
+            addressData[currentAddressIndex] = newAddress;
+            console.log('Address updated:', newAddress);
+        } else {
+            // Guardar la nueva dirección
+            console.log('New Address:', newAddress);
+        }
         setShowModal(false);
-    }
+    };
+
+    const validateInput = (name, value) => {
+        const patterns = {
+            name: /^[a-zA-Z\s]{0,35}$/, // Max 25 letters
+            country: /^[a-zA-Z\s]{0,15}$/, // Max 15 letters
+            state: /^[a-zA-Z\s]{0,15}$/, // Max 15 letters
+            city: /^[a-zA-Z\s]{0,15}$/, // Max 15 letters
+            street: /^.{0,20}$/, // Max 20 characters
+            postal_code: /^\d{0,5}$/ // Max 5 digits
+        };
+        return patterns[name].test(value);
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNewAddress(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
-    }
-
-    const handleEdit = (index) => {
-        console.log(`Editar dirección en índice: ${index}`);
+        if (validateInput(name, value)) {
+            setNewAddress(prevState => ({
+                ...prevState,
+                [name]: value
+            }));
+        }
     };
 
     const handleDelete = (index) => {
-        console.log(`Eliminar dirección en índice: ${index}`);
+        setSelectedAddressIndex(index);
+        setShowDeleteModal(true);
+    };
+    
+    const handleConfirmDelete = () => {
+        console.log(`Eliminar dirección en índice: ${selectedAddressIndex}`);
+        setShowDeleteModal(false);
     };
 
     return (
@@ -138,7 +180,7 @@ function CardsManageAddresses() {
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Agregar Dirección</Modal.Title>
+                    <Modal.Title>{isEditing ? 'Editar Dirección' : 'Agregar Dirección'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
@@ -205,14 +247,32 @@ function CardsManageAddresses() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button  onClick={() => setShowModal(false)} className='modal-button'>
+                    <Button onClick={() => setShowModal(false)}>
                         Cancelar
                     </Button>
-                    <Button  onClick={handleSaveAddress} className='modal-button'>
-                        Guardar Dirección
+                    <Button onClick={handleSaveAddress}>
+                        {isEditing ? 'Guardar Cambios' : 'Guardar Dirección'}
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmar Eliminación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    ¿Estás seguro de que deseas eliminar esta dirección?
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={() => handleConfirmDelete()}>
+                        Eliminar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
         </>
     );
 }
