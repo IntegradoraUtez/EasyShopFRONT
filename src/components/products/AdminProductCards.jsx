@@ -111,22 +111,56 @@ export default function ProductsCard() {
     });
 
     const handleAddClose = () => setShowAddModal(false);
-    const handleAddShow = () => setShowAddModal(true);
+    const handleAddShow = () => {
+        // Limpia el estado del nuevo producto
+        setNewProduct({
+            name: '',
+            description: '',
+            price: '',
+            discount: '',
+            stock: '',
+            image: '',
+            category: ''
+        });
+        setShowAddModal(true);
+    };
 
     const handleEditClose = () => setShowEditModal(false);
     const handleEditShow = (product) => {
         setSelectedProduct(product);
-        setNewProduct(product);
+        setNewProduct({
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            discount: product.discount,
+            stock: product.stock,
+            image: product.image,
+            category: product.category
+        });
         setShowEditModal(true);
     };
 
     const handleAddProduct = () => {
-        setProducts([...products, { ...newProduct, price: parseFloat(newProduct.price), discount: parseFloat(newProduct.discount), stock: parseInt(newProduct.stock) }]);
+        setProducts([...products, {
+            ...newProduct,
+            price: parseFloat(newProduct.price),
+            discount: parseFloat(newProduct.discount),
+            stock: parseInt(newProduct.stock)
+        }]);
         handleAddClose();
     };
 
     const handleEditProduct = () => {
-        setProducts(products.map(product => product === selectedProduct ? newProduct : product));
+        setProducts(products.map(product =>
+            product === selectedProduct
+                ? {
+                    ...newProduct,
+                    price: parseFloat(newProduct.price),
+                    discount: parseFloat(newProduct.discount),
+                    stock: parseInt(newProduct.stock)
+                }
+                : product
+        ));
         handleEditClose();
     };
 
