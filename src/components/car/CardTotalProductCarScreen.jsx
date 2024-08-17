@@ -54,7 +54,7 @@ function CardTotalProductCarScreen() {
                                 <option value="2">Tarjeta Nu</option>
                                 <option value="3">Tarjeta Banco Azteca</option>
                             </Form.Select>
-                            <Link to="" className="custom-link">Agregar nueva Tarjeta</Link>
+                            <Link to="/user/insertCard" className="custom-link">Agregar nueva Tarjeta</Link>
                         </Col>
                     </Row>
                     <hr />
@@ -70,7 +70,7 @@ function CardTotalProductCarScreen() {
                                 <option value="1">Dirección Principal</option>
                                 <option value="2">Dirección Trabajo</option>
                             </Form.Select>
-                            <Link to="" className="custom-link">Agregar nueva Dirección</Link>
+                            <Link to="/user/manageAddresses" className="custom-link">Agregar nueva Dirección</Link>
                         </Col>
                     </Row>
                 </Card.Body>
