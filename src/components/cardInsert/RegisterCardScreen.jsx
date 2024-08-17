@@ -7,19 +7,16 @@ import visa from '../../assets/simbolos.png';
 import {
     FuncionNumeroTarjeta,
     FuncionIdentificarTipoTarjeta,
-    FuncionVerificarVencimientoFecha,
     FuncionFormatMesAño,
 } from './validaciones';
 
 function NewCard() {
 
     const navigate = useNavigate();
+    const [errors, setErrors] = useState({});
 
-    const handleInsertCard = () => {
-        navigate('/user/insertCard')
-    }
     const [cardData, setCardData] = useState({
-        alias: "Nueva Tarjeta",
+        alias: "",
         card_number: "",
         card_owner: "",
         card_type: "",
@@ -30,10 +27,29 @@ function NewCard() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'card_owner' && !/^[A-Za-z\s]+$/.test(value)) {
+            setErrors({ ...errors, card_owner: 'El nombre solo debe contener letras.' });
+        } else if (name === 'card_zip' && (!/^\d*$/.test(value) || value.length > 5)) {
+            setErrors({ ...errors, card_zip: 'El código postal debe ser un número de hasta 5 dígitos.' });
+        } else if (name === 'card_cvv' && (!/^\d*$/.test(value) || value.length > 3)) {
+            setErrors({ ...errors, card_cvv: 'El CVV debe ser un número de 3 dígitos.' });
+        } else {
+            setErrors({ ...errors, [name]: null });
+        }
+
         setCardData({
             ...cardData,
             [name]: value,
         });
+    };
+
+    const validateFields = () => {
+        const isCardOwnerValid = /^[A-Za-z\s]+$/.test(cardData.card_owner) && cardData.card_owner.length > 0;
+        const isCardZipValid = /^\d{5}$/.test(cardData.card_zip);
+        const isCardCvvValid = /^\d{3}$/.test(cardData.card_cvv);
+
+        return isCardOwnerValid && isCardZipValid && isCardCvvValid && cardData.card_number && cardData.card_type && cardData.card_expiration;
     };
 
     const handleCardNumberChange = (e) => {
@@ -55,12 +71,19 @@ function NewCard() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const expirationError = FuncionVerificarVencimientoFecha(cardData.card_expiration);
-        if (expirationError) {
-            alert(expirationError);
-        } else {
-            // Process the card data
+
+        if (validateFields()) {
             console.log('Card Data:', cardData);
+            navigate('/user/manageCards');
+        } else {
+            alert('Por favor, complete todos los campos correctamente.');
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmit(e);
         }
     };
 
@@ -123,8 +146,9 @@ function NewCard() {
                     </Card>
                 </Col>
             </Row>
-            <Form onSubmit={handleSubmit} className='mb-5'>
+            <Form onSubmit={handleSubmit} onKeyPress={handleKeyPress} className='mb-5'>
                 <Row className="justify-content-center">
+
                     <Col xs={12} md={6}>
                         <Form.Group controlId="formCardNumber">
                             <Form.Label>Número de Tarjeta</Form.Label>
@@ -143,7 +167,12 @@ function NewCard() {
                                 name="card_owner"
                                 value={cardData.card_owner}
                                 onChange={handleInputChange}
+                                maxLength={25}
+                                isInvalid={!!errors.card_owner}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.card_owner}
+                            </Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group controlId="formCardType" className="mt-3">
                             <Form.Label>Tipo de Tarjeta</Form.Label>
@@ -153,21 +182,26 @@ function NewCard() {
                                 value={cardData.card_type}
                                 onChange={handleInputChange}
                             >
-                                <option value=""></option>
+                                <option value="">Selecciona el tipo de tarjeta</option>
                                 <option value="Debito">Debito</option>
                                 <option value="Credito">Credito</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>
                     <Col xs={12} md={6}>
-                        <Form.Group controlId="formCardZip" >
+                        <Form.Group controlId="formCardZip">
                             <Form.Label>Código Postal</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="card_zip"
                                 value={cardData.card_zip}
                                 onChange={handleInputChange}
+                                maxLength="5"
+                                isInvalid={!!errors.card_zip}
                             />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.card_zip}
+                            </Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group controlId="formCardExpiration" className="mt-3">
                             <Form.Label>Fecha de Expiración (MM/AA)</Form.Label>
@@ -187,17 +221,33 @@ function NewCard() {
                                 value={cardData.card_cvv}
                                 onChange={handleInputChange}
                                 maxLength="3"
+                                isInvalid={!!errors.card_cvv}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.card_cvv}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        <Form.Group controlId="formCardAlias" className="mt-3">
+                            <Form.Label>Alias</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="alias"
+                                value={cardData.alias}
+                                onChange={handleInputChange}
+                                maxLength="15"
                             />
                         </Form.Group>
                     </Col>
                 </Row>
                 <Row>
-
-                    <Button variant="primary" type="submit" className="mt-4" onClick={handleInsertCard}>
+                    <Button variant="primary" type="submit" className="mt-4">
                         Registrar Tarjeta
                     </Button>
                 </Row>
             </Form>
+
         </>
     );
 }
