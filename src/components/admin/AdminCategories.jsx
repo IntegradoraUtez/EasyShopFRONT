@@ -36,11 +36,16 @@ export default function AdminCategories() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showActive, setShowActive] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newCategory, setNewCategory] = useState({ name: '', images: ['', '', ''] });
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showConfirmDeactivateModal, setShowConfirmDeactivateModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [newCategory, setNewCategory] = useState({ categoria: '', images: ['', '', ''] });
+    const [editCategory, setEditCategory] = useState({ id: null, categoria: '', images: ['', '', ''] });
+
 
     const cardsData = [
         {
-            categoria: 'Administrar Categorias',
+            categoria: 'Jeans',
             images: [
                 'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
                 'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
@@ -49,7 +54,7 @@ export default function AdminCategories() {
             active: true
         },
         {
-            categoria: 'Administrar Productos',
+            categoria: 'Jackets',
             images: [
                 'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
                 'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
@@ -58,16 +63,16 @@ export default function AdminCategories() {
             active: true
         },
         {
-            categoria: 'Administrar Usuarios',
+            categoria: 'Pans',
             images: [
                 'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
                 'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
                 'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg'
             ],
-            active: false
+            active: true
         },
         {
-            categoria: 'Historial de Compras',
+            categoria: 'Blusas',
             images: [
                 'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
                 'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
@@ -91,9 +96,26 @@ export default function AdminCategories() {
         setShowAddModal(false);
     };
 
+    const handleEditCategory = () => {
+        // Lógica para editar la categoría
+        console.log('Editar categoría', editCategory);
+        setShowEditModal(false);
+    };
+
+    const handleDeactivateCategory = () => {
+        // Lógica para desactivar la categoría
+        console.log('Desactivar categoría', selectedCategory);
+        setShowConfirmDeactivateModal(false);
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewCategory({ ...newCategory, [name]: value });
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditCategory({ ...editCategory, [name]: value });
     };
 
     const filteredCardsData = cardsData.filter(card => {
@@ -138,12 +160,19 @@ export default function AdminCategories() {
                         key={index}
                         categoria={card.categoria}
                         images={card.images}
-                        onModify={() => console.log(`Modificar ${card.categoria}`)}
-                        onDeactivate={() => console.log(`Desactivar ${card.categoria}`)}
+                        onModify={() => {
+                            setEditCategory(card);
+                            setShowEditModal(true);
+                        }}
+                        onDeactivate={() => {
+                            setSelectedCategory(card.categoria);
+                            setShowConfirmDeactivateModal(true);
+                        }}
                     />
                 ))}
             </Row>
 
+            {/* Modal para Agregar Categoría */}
             <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Agregar Nueva Categoría</Modal.Title>
@@ -156,8 +185,9 @@ export default function AdminCategories() {
                                 type="text"
                                 placeholder="Nombre de la Categoría"
                                 name="name"
-                                value={newCategory.name}
+                                value={newCategory.name || ''}
                                 onChange={handleInputChange}
+                                maxLength={20}
                             />
                         </Form.Group>
                         {newCategory.images.map((image, index) => (
@@ -184,6 +214,70 @@ export default function AdminCategories() {
                     </Button>
                     <Button variant="primary" onClick={handleAddCategory}>
                         Agregar Categoría
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal para Editar Categoría */}
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Editar Categoría</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formEditCategoryName">
+                            <Form.Label>Nombre de la Categoría</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Nombre de la Categoría"
+                                name="name"
+                                value={editCategory.categoria}
+                                onChange={handleEditInputChange}
+                                maxLength={20}
+                            />
+                        </Form.Group>
+                        {editCategory.images.map((image, index) => (
+                            <Form.Group controlId={`formEditCategoryImage${index}`} key={index}>
+                                <Form.Label>URL de la Imagen {index + 1}</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder={`URL de la Imagen ${index + 1}`}
+                                    name={`image${index}`}
+                                    value={image}
+                                    onChange={(e) => {
+                                        const images = [...editCategory.images];
+                                        images[index] = e.target.value;
+                                        setEditCategory({ ...editCategory, images });
+                                    }}
+                                />
+                            </Form.Group>
+                        ))}
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={handleEditCategory}>
+                        Guardar Cambios
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal de Confirmación para Desactivar */}
+            <Modal show={showConfirmDeactivateModal} onHide={() => setShowConfirmDeactivateModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmar Desactivación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    ¿Estás seguro de que deseas desactivar la categoría "{selectedCategory}"?
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowConfirmDeactivateModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={handleDeactivateCategory}>
+                        Confirmar
                     </Button>
                 </Modal.Footer>
             </Modal>
