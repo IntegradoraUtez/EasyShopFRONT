@@ -40,7 +40,6 @@ export const Profile = () => {
         </div>
         <div className="button-container">
           <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
-          <button className="profile-button" onClick={handleShow}>Actualizar contraseña</button>
           <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
           <button className="profile-button" onClick={handleManageCards}>Administrar tarjetas de pago</button>
         </div>

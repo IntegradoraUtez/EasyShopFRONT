@@ -8,23 +8,60 @@ export const UpdateProfileComponents = () => {
   const [gender, setGender] = useState('Masculino');
   const [userType, setUserType] = useState('Administrador');
   const [fullName, setFullName] = useState('Juan Pérez');
+
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validate = () => {
+    const errors = {};
+
+    const specialCharPattern = /[^a-zA-Z0-9\s]/;
+
+    if (username.trim().length < 3) {
+      errors.username = 'El nombre de usuario debe tener al menos 3 caracteres';
+    } else if (specialCharPattern.test(username)) {
+      errors.username = 'El nombre de usuario no debe contener caracteres especiales';
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = 'El correo no es válido';
+    }
+
+    if (new Date(birthdate) > new Date()) {
+      errors.birthdate = 'La fecha de nacimiento no puede ser en el futuro';
+    }
+
+    if (fullName.trim().length < 3) {
+      errors.fullName = 'El nombre completo debe tener al menos 3 caracteres';
+    } else if (specialCharPattern.test(fullName)) {
+      errors.fullName = 'El nombre completo no debe contener caracteres especiales';
+    }
+
+    return errors;
+  };
 
   const handleUpdate = (event) => {
     event.preventDefault();
-    // Aquí puedes manejar la lógica de actualización
-    console.log({
-      username,
-      email,
-      birthdate,
-      gender,
-      userType,
-      fullName
-    });
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+    } else {
+      setErrors({});
+      // Aquí puedes manejar la lógica de actualización
+      console.log({
+        username,
+        email,
+        birthdate,
+        gender,
+        userType,
+        fullName,
+      });
+    }
   };
 
   const handleBack = () => {
-    navigate('/profile'); 
+    navigate('/profile');
   };
 
   return (
@@ -42,6 +79,7 @@ export const UpdateProfileComponents = () => {
                 onChange={(e) => setUsername(e.target.value)} 
                 required 
               />
+              {errors.username && <span className="error">{errors.username}</span>}
             </div>
             <div className="col-12 col-md-6">
               <label htmlFor="email">Correo</label>
@@ -52,6 +90,7 @@ export const UpdateProfileComponents = () => {
                 onChange={(e) => setEmail(e.target.value)} 
                 required 
               />
+              {errors.email && <span className="error">{errors.email}</span>}
             </div>
           </div>
           <div className="row form-group">
@@ -64,6 +103,7 @@ export const UpdateProfileComponents = () => {
                 onChange={(e) => setBirthdate(e.target.value)} 
                 required 
               />
+              {errors.birthdate && <span className="error">{errors.birthdate}</span>}
             </div>
             <div className="col-12 col-md-6">
               <label htmlFor="gender">Género</label>
@@ -89,6 +129,7 @@ export const UpdateProfileComponents = () => {
                 onChange={(e) => setFullName(e.target.value)} 
                 required 
               />
+              {errors.fullName && <span className="error">{errors.fullName}</span>}
             </div>
           </div>
           <div className="form-group button-group">
@@ -144,6 +185,12 @@ export const UpdateProfileComponents = () => {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+          }
+
+          .form-group .error {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
           }
 
           .button-group {
