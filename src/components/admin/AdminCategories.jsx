@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Carousel, Col, Row, Button, Dropdown, Form, Modal } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import '../landing/styleHomeScreen.css'; // Asegúrate de ajustar la ruta al archivo de estilos según tu estructura de proyecto
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -37,6 +38,18 @@ function SingleCardWithCarousel({ categoria, images, onModify, onDeactivate }) {
 
 export default function AdminCategories() {
     const {user} = useAuth();
+    const navigate = useNavigate;
+    
+    useEffect(() => {
+        if (!user || user.user.type !== 'admin') {
+            navigate('/'); 
+        } else {
+            console.log('Tipo:', user.user.type);
+            console.log('Token:', user.token);
+        }
+
+    }, [user, navigate]);
+
 
 
     const [searchTerm, setSearchTerm] = useState('');

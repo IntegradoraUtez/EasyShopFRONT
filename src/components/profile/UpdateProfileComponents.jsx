@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const UpdateProfileComponents = () => {
   const [username, setUsername] = useState('Nombre de Usuario');

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function ProductsCard() {
     const navigate = useNavigate();
@@ -10,101 +11,7 @@ export default function ProductsCard() {
     const handleProcessCarBuy = () => {
         navigate('/car')
     }
-
-
-    const [products, setProducts] = useState([
-        {
-            name: "Producto 1",
-            description: "Una descripción rápida del producto 1.",
-            price: 19.99,
-            discount: 0.1, 
-            stock: 15,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 1"
-        },
-        {
-            name: "Producto 2",
-            description: "Otra descripción rápida del producto 2.",
-            price: 29.99,
-            discount: 0.2, 
-            stock: 8,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 2"
-        },
-        {
-            name: "Producto 3",
-            description: "Descripción rápida del producto 3.",
-            price: 9.99,
-            discount: 0.05, // 5% de descuento
-            stock: 20,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 3"
-        },
-        {
-            name: "Producto 4",
-            description: "Descripción rápida del producto 4.",
-            price: 49.99,
-            discount: 0.15, // 15% de descuento
-            stock: 10,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 4"
-        },
-        {
-            name: "Producto 5",
-            description: "Descripción rápida del producto 5.",
-            price: 14.99,
-            discount: 0.1, // 10% de descuento
-            stock: 25,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 5"
-        },
-        {
-            name: "Producto 6",
-            description: "Descripción rápida del producto 6.",
-            price: 39.99,
-            discount: 0.2, // 20% de descuento
-            stock: 5,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 6"
-        },
-        {
-            name: "Producto 7",
-            description: "Descripción rápida del producto 7.",
-            price: 24.99,
-            discount: 0.1, // 10% de descuento
-            stock: 12,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 7"
-        },
-        {
-            name: "Producto 8",
-            description: "Descripción rápida del producto 8.",
-            price: 34.99,
-            discount: 0.25, // 25% de descuento
-            stock: 7,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 8"
-        },
-        {
-            name: "Producto 9",
-            description: "Descripción rápida del producto 9.",
-            price: 44.99,
-            discount: 0.3, // 30% de descuento
-            stock: 3,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 9"
-        },
-        {
-            name: "Producto 10",
-            description: "Descripción rápida del producto 10.",
-            price: 54.99,
-            discount: 0.4, // 40% de descuento
-            stock: 1,
-            image: "https://via.placeholder.com/150",
-            category: "Categoría 10"
-        },
-    ]);
-
+    const [products, setProducts] = useState([]);
     const [show, setShow] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -134,6 +41,39 @@ export default function ProductsCard() {
         }
         setProducts(sortedProducts);
     };
+
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
+                console.log(response.data);
+                if (response.data && Array.isArray(response.data.products)) {
+                    setProducts(response.data.products);
+                } else {
+                    console.error("Formato de datos inesperado:", response.data);
+                }
+            } catch (err) {
+                console.error("Error fetching products", err);
+            }
+        };
+       
+        const fetchCategories = async() => {
+                    try {
+                const response = await axios.get('');
+                console.log(response.data);
+                if (response.data && Array.isArray(response.data.products)) {
+                    setProducts(response.data.products);
+                } else {
+                    console.error("Formato de datos inesperado:", response.data);
+                }
+            } catch (error) {
+                
+            }
+        }
+    
+        fetchProducts();
+    }, []);
 
     return (
         <>
