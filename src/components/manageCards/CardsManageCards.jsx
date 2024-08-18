@@ -1,392 +1,283 @@
-import { React, Fragment, useEffect, useState } from 'react';
-import { Row, Col, Card, Button, Spinner, Modal, Form } from 'react-bootstrap'; // Importa el componente Modal de react-bootstrap
-import './manageCardsScreen.css';
-import { useNavigate } from 'react-router-dom';
-import chip from '../../assets/tarjeta-de-credito.png';
-import visa from '../../assets/simbolos.png';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect, Fragment } from 'react';
+import { Row, Col, Card, Button, Modal, Form } from 'react-bootstrap';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 
 function CardsManageCards() {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [cardsData, setCardsData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showEditModal, setShowEditModal] = useState(false); // Estado para manejar el modal
-    const [selectedCard, setSelectedCard] = useState(null); // Estado para la tarjeta seleccionada
-    const [editedCardData, setEditedCardData] = useState({});
-    const idUser = user?.user?.id;
+    const [showModal, setShowModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedCardIndex, setSelectedCardIndex] = useState(null);
+    const [currentCardIndex, setCurrentCardIndex] = useState(null);
+    const [newCard, setNewCard] = useState({
+        name: '',
+        country: '',
+        state: '',
+        city: '',
+        street: '',
+        postal_code: ''
+    });
 
-    useEffect(() => {
-        if (user) {
-            if (user.user.type !== 'user') {
-                navigate('/');
-            }
-        }
-    }, [user, navigate]);
-
-    useEffect(() => {
-        const fetchPaymentMethods = async () => {
-            if (!idUser) return;
-
-            try {
-                const response = await axios.get(
-                    `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/get_paymentMethods_by_Usersid/${idUser}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${user.token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                setCardsData(response.data.paymentMethod || []);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching payment methods:', error);
-                setLoading(false);
-            }
-        };
-
-        if (user && user.user.type === 'user') {
-            fetchPaymentMethods();
-        }
-    }, [user, idUser]);
-
-    const handleInsertNewCard = () => {
-        navigate('/user/insertCard');
+    // CORS headers configuration
+    const corsHeaders = {
+        'Authorization': `Bearer ${user.token}`,
+        'Content-Type': 'application/json'
     };
 
-    const handleEdit = (card) => {
-        setSelectedCard(card);
-        setEditedCardData({
-            id: card.id,
-            alias: card.alias,
-            card_number: card.card_number,
-            card_owner: card.card_owner,
-            card_expiration: card.card_expiration,
-            card_cvv: card.card_cvv,
-            card_type: card.card_type,
-            card_zip: card.card_zip,
-            Users_id: idUser
+    useEffect(() => {
+        axios.get('https://your-api-url.com/get_cards', { headers: corsHeaders })
+            .then(response => {
+                setCardsData(response.data.cards || []);
+            })
+            .catch(error => {
+                console.error('Error fetching cards:', error);
+            });
+    }, [user.token]);
+
+    const handleInsertCard = () => {
+        setIsEditing(false);
+        setNewCard({
+            name: '',
+            country: '',
+            state: '',
+            city: '',
+            street: '',
+            postal_code: ''
         });
-        console.log(card)
-        setShowEditModal(true);
+        setShowModal(true);
     };
 
-    const handleCloseModal = () => {
-        setShowEditModal(false);
+    const handleEdit = (index) => {
+        setIsEditing(true);
+        setCurrentCardIndex(index);
+        setNewCard(cardsData[index]);
+        setShowModal(true);
     };
 
-    const handleSaveChanges = async () => {
+    const handleSaveCard = async () => {
+        const url = isEditing
+            ? 'https://your-api-url.com/update_card'
+            : 'https://your-api-url.com/insert_card';
+
+        const method = isEditing ? 'put' : 'post';
+        const cardPayload = { ...newCard };
+
         try {
-            console.log('Datos enviados:', editedCardData);
-            await axios.put(
-                `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/update_paymentMethod_put`,
-                editedCardData,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${user.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            setCardsData(cardsData.map(card =>
-                card.id === selectedCard.id ? { ...card, ...editedCardData } : card
-            ));
-            handleCloseModal();
+            const response = await axios({
+                method,
+                url,
+                data: cardPayload,
+                headers: corsHeaders
+            });
+
+            if (isEditing) {
+                const updatedCards = [...cardsData];
+                updatedCards[currentCardIndex] = response.data;
+                setCardsData(updatedCards);
+            } else {
+                setCardsData(prevCards => [...prevCards, response.data]);
+            }
+            setShowModal(false);
         } catch (error) {
-            console.error('Error updating card:', error);
+            console.error('Error saving card:', error);
+        }
+    };
+
+    const handleDelete = (index) => {
+        setSelectedCardIndex(index);
+        setShowDeleteModal(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        const id = cardsData[selectedCardIndex].id;
+        try {
+            await axios.delete(`https://your-api-url.com/delete_card/${id}`, { headers: corsHeaders });
+            const updatedCards = cardsData.filter((_, i) => i !== selectedCardIndex);
+            setCardsData(updatedCards);
+            setShowDeleteModal(false);
+        } catch (error) {
+            console.error('Error deleting card:', error);
         }
     };
 
     const handleActive = async (card) => {
         try {
             await axios.patch(
-                `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/toggle_paymentMethod_active/${card.id}`,
+                `https://your-api-url.com/toggle_card_active/${card.id}`,
                 {},
                 {
-                    headers: {
-                        'Authorization': `Bearer ${user.token}`,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: corsHeaders
                 }
             );
 
-            // Actualizar solo la tarjeta que fue modificada
             setCardsData(cardsData.map(c =>
-                c.id === card.id ? { ...c, active: !c.active } : c
+                c.id === card.id ? { ...c, active: c.active === 0 ? 1 : 0 } : c
             ));
         } catch (error) {
             console.error('Error toggling card active state:', error);
         }
     };
 
-    const handleAliasChange = (e) => {
-        const value = e.target.value;
-        if (value.length <= 30) {
-            setEditedCardData({ ...editedCardData, alias: value });
-        }
-    };
-
-    // Validación del número de tarjeta
-    const handleCardNumberChange = (e) => {
-        const value = e.target.value;
-        if (/^\d*$/.test(value) && value.length <= 16) {
-            setEditedCardData({ ...editedCardData, card_number: value });
-        }
-    };
-
-    // Validación del nombre del propietario
-    const handleCardOwnerChange = (e) => {
-        const value = e.target.value;
-        if (/^[a-zA-Z\s]*$/.test(value) && value.length <= 30) {
-            setEditedCardData({ ...editedCardData, card_owner: value });
-        }
-    };
-
-    // Validación del código postal
-    const handleCardZipChange = (e) => {
-        const value = e.target.value;
-        if (/^\d*$/.test(value) && value.length <= 5) {
-            setEditedCardData({ ...editedCardData, card_zip: value });
-        }
-    };
-
-
-
-    if (!user || user.user.type !== 'user') {
-        return <h2>No tienes permiso para ver esta página.</h2>;
-    }
-
     return (
         <>
             <Row className='text-center responsive-title'>
                 <Col>
-                    <h2>Administración de Tarjetas de Pago</h2>
-                </Col>
-            </Row>
-            <Row className='text-center'>
-                <Col>
-                    <button className='responsive-button button-insert' onClick={handleInsertNewCard}>Agregar nueva tarjeta de pago</button>
+                    <h2>Administración de Tarjetas</h2>
                 </Col>
             </Row>
 
-            {loading ? (
-                <Row className="justify-content-center mt-4">
-                    <Col className="text-center">
-                        <Spinner animation="border" variant="primary" />
-                    </Col>
-                </Row>
-            ) : (
-                cardsData.length === 0 ? (
-                    <Row className="justify-content-center mt-4">
-                        <Col className="text-center">
-                            <h2>No hay datos disponibles.</h2>
+            {user.user?.type === 'admin' && (
+                <>
+                    <Row className='text-center'>
+                        <Col>
+                            <Button className='responsive-button button-insert' onClick={handleInsertCard}>Agregar Tarjeta</Button>
                         </Col>
                     </Row>
-                ) : (
-                    cardsData.map((card, index) => (
-                        <Fragment key={index}>
-                            {index % 2 === 0 && (
-                                <Row className="align-items-center justify-content-center mb-4 mt-2">
-                                    <Col xs={12} md={6} className="justify-content-center mb-3 mb-md-0">
-                                        <Card className="address-card card-design">
-                                            <Card.Header className="text-center">{card.alias}</Card.Header>
-                                            <Card.Body>
-                                                <Card className="address-card card-design-bank">
-                                                    <Card.Body>
-                                                        <Row>
-                                                            <Col className="text-left">
-                                                                <img src={chip} alt="Chip" className="chip-image" />
-                                                            </Col>
-                                                            <Col className="text-right">
-                                                                <img src={visa} alt="Visa" className="visa-image" />
-                                                            </Col>
-                                                        </Row>
-                                                        <div className="bank-card">
-                                                            <Row>
-                                                                <Col>
-                                                                    <Row>
-                                                                        <Col className='text-card'>Número de Tarjeta</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_number}</Col>
-                                                                    </Row>
-                                                                    <Row className='mt-2'>
-                                                                        <Col className='text-card'>Nombre Propietario</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_owner}</Col>
-                                                                    </Row>
-                                                                </Col>
-                                                                <Col>
-                                                                    <Row>
-                                                                        <Col className='text-card'>Tipo de Tarjeta</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_type}</Col>
-                                                                    </Row>
-                                                                    <Row className='mt-2'>
-                                                                        <Col className='text-card'>Código Postal</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_zip}</Col>
-                                                                    </Row>
-                                                                </Col>
-                                                            </Row>
-                                                        </div>
-                                                    </Card.Body>
-                                                </Card>
-                                                <Row className="justify-content-center mt-3">
-                                                    <Col xs={6} className="text-center mb-2">
-                                                        <Button variant="primary" className="responsive-button" onClick={() => handleEdit(card)}>Editar</Button>
-                                                    </Col>
-                                                    <Col xs={6} className="text-center">
-                                                        <Button variant={card.active ? "danger" : "success"} className="responsive-button" onClick={() => handleActive(card)}>
-                                                            {card.active ? "Desactivar" : "Activar"}
-                                                        </Button>
-                                                    </Col>
-                                                </Row>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    {cardsData[index + 1] && (
-                                        <Col xs={12} md={6} className="justify-content-center">
-                                            <Card className="address-card card-design">
-                                                <Card.Header className="text-center">{cardsData[index + 1].alias}</Card.Header>
+
+                    {Array.isArray(cardsData) && cardsData.length > 0 ? (
+                        cardsData.map((card, index) => (
+                            <Fragment key={index}>
+                                {card.active === 1 && (
+                                    <Row className="align-items-center justify-content-center mb-4 mt-2">
+                                        <Col xs={12} md={6} className="justify-content-center mb-3 mb-md-0">
+                                            <Card className="card-design">
+                                                <Card.Header className="text-center">{card.name}</Card.Header>
                                                 <Card.Body>
-                                                    <Card className="address-card card-design-bank">
-                                                        <Card.Body>
-                                                            <Row>
-                                                                <Col className="text-left">
-                                                                    <img src={chip} alt="Chip" className="chip-image" />
-                                                                </Col>
-                                                                <Col className="text-right">
-                                                                    <img src={visa} alt="Visa" className="visa-image" />
-                                                                </Col>
-                                                            </Row>
-                                                            <div className="bank-card">
-                                                                <Row>
-                                                                    <Col>
-                                                                        <Row>
-                                                                            <Col className='text-card'>Número de Tarjeta</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_number}</Col>
-                                                                        </Row>
-                                                                        <Row className='mt-2'>
-                                                                            <Col className='text-card'>Nombre Propietario</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_owner}</Col>
-                                                                        </Row>
-                                                                    </Col>
-                                                                    <Col>
-                                                                        <Row>
-                                                                            <Col className='text-card'>Tipo de Tarjeta</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_type}</Col>
-                                                                        </Row>
-                                                                        <Row className='mt-2'>
-                                                                            <Col className='text-card'>Código Postal</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_zip}</Col>
-                                                                        </Row>
-                                                                    </Col>
-                                                                </Row>
-                                                            </div>
-                                                        </Card.Body>
-                                                    </Card>
+                                                    <Row className="align-items-center">
+                                                        <Col xs={12} md={6} className="text-center my-2">
+                                                            <p><strong className='responsive-text'>País:</strong> {card.country}</p>
+                                                            <p><strong className='responsive-text'>Estado:</strong> {card.state}</p>
+                                                            <p><strong className='responsive-text'>Ciudad:</strong> {card.city}</p>
+                                                        </Col>
+                                                        <Col xs={12} md={6} className="text-center my-2">
+                                                            <p><strong className='responsive-text'>Calle:</strong> {card.street}</p>
+                                                            <p><strong className='responsive-text'>Código Postal:</strong> {card.postal_code}</p>
+                                                        </Col>
+                                                    </Row>
                                                     <Row className="justify-content-center mt-3">
                                                         <Col xs={6} className="text-center mb-2">
-                                                            <Button variant="primary" className="responsive-button" onClick={() => handleEdit(cardsData[index + 1])}>Editar</Button>
+                                                            {card.active === 1 && (
+                                                                <Button variant="primary" className="responsive-button" onClick={() => handleEdit(index)}>Editar</Button>
+                                                            )}
                                                         </Col>
-                                                        <Col xs={6} className="text-center">
+                                                        <Col xs={6} className="text-center mb-2">
                                                             <Button
-                                                                variant={cardsData[index + 1].active ? "danger" : "success"}
+                                                                variant={card.active === 1 ? "danger" : "success"}
                                                                 className="responsive-button"
-                                                                onClick={() => handleActive(cardsData[index + 1])}
+                                                                onClick={() => handleActive(card)}
                                                             >
-                                                                {cardsData[index + 1].active ? "Desactivar" : "Activar"}
+                                                                {card.active === 1 ? "Desactivar" : "Activar"}
                                                             </Button>
+                                                        </Col>
+                                                        <Col xs={6} className="text-center mb-2">
+                                                            <Button variant="danger" className="responsive-button" onClick={() => handleDelete(index)}>Eliminar</Button>
                                                         </Col>
                                                     </Row>
                                                 </Card.Body>
                                             </Card>
                                         </Col>
-                                    )}
-                                </Row>
-                            )}
-                        </Fragment>
-                    ))
-                )
+                                    </Row>
+                                )}
+                            </Fragment>
+                        ))
+                    ) : (
+                        <Row className="text-center">
+                            <Col>
+                                <p>No hay tarjetas disponibles.</p>
+                            </Col>
+                        </Row>
+                    )}
+                </>
             )}
 
-            {/* Modal para editar tarjeta */}
-            <Modal show={showEditModal} onHide={handleCloseModal}>
+            {/* Modal para insertar y editar tarjeta */}
+            <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Editar Tarjeta</Modal.Title>
+                    <Modal.Title>{isEditing ? 'Editar Tarjeta' : 'Agregar Tarjeta'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <Form.Group controlId="formAlias">
-                            <Form.Label>Alias</Form.Label>
+                        <Form.Group controlId="formCardName">
+                            <Form.Label>Nombre</Form.Label>
                             <Form.Control
                                 type="text"
-                                placeholder="Alias"
-                                value={editedCardData.alias || ''}
-                                onChange={handleAliasChange}
+                                name="name"
+                                value={newCard.name}
+                                onChange={e => setNewCard({ ...newCard, name: e.target.value })}
+                                placeholder="Nombre"
                             />
                         </Form.Group>
-                        <Form.Group controlId="formCardNumber">
-                            <Form.Label>Número de Tarjeta</Form.Label>
+                        <Form.Group controlId="formCardCountry">
+                            <Form.Label>País</Form.Label>
                             <Form.Control
                                 type="text"
-                                placeholder="Número de Tarjeta"
-                                value={editedCardData.card_number || ''}
-                                onChange={handleCardNumberChange}
+                                name="country"
+                                value={newCard.country}
+                                onChange={e => setNewCard({ ...newCard, country: e.target.value })}
+                                placeholder="País"
                             />
                         </Form.Group>
-                        <Form.Group controlId="formCardOwner">
-                            <Form.Label>Nombre Propietario</Form.Label>
+                        <Form.Group controlId="formCardState">
+                            <Form.Label>Estado</Form.Label>
                             <Form.Control
                                 type="text"
-                                placeholder="Nombre Propietario"
-                                value={editedCardData.card_owner || ''}
-                                onChange={handleCardOwnerChange}
+                                name="state"
+                                value={newCard.state}
+                                onChange={e => setNewCard({ ...newCard, state: e.target.value })}
+                                placeholder="Estado"
                             />
                         </Form.Group>
-                        <Form.Group controlId="formCardType">
-                            <Form.Label>Tipo de Tarjeta</Form.Label>
+                        <Form.Group controlId="formCardCity">
+                            <Form.Label>Ciudad</Form.Label>
                             <Form.Control
-                                as="select"
-                                value={editedCardData.card_type || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_type: e.target.value })}
-                            >
-                                <option value="Débito">Débito</option>
-                                <option value="Crédito">Crédito</option>
-                            </Form.Control>
+                                type="text"
+                                name="city"
+                                value={newCard.city}
+                                onChange={e => setNewCard({ ...newCard, city: e.target.value })}
+                                placeholder="Ciudad"
+                            />
                         </Form.Group>
-                        <Form.Group controlId="formCardZip">
+                        <Form.Group controlId="formCardStreet">
+                            <Form.Label>Calle</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="street"
+                                value={newCard.street}
+                                onChange={e => setNewCard({ ...newCard, street: e.target.value })}
+                                placeholder="Calle"
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="formCardPostalCode">
                             <Form.Label>Código Postal</Form.Label>
                             <Form.Control
                                 type="text"
+                                name="postal_code"
+                                value={newCard.postal_code}
+                                onChange={e => setNewCard({ ...newCard, postal_code: e.target.value })}
                                 placeholder="Código Postal"
-                                value={editedCardData.card_zip || ''}
-                                onChange={handleCardZipChange}
                             />
                         </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
-                        Cancelar
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>Cerrar</Button>
+                    <Button variant="primary" onClick={handleSaveCard}>
+                        {isEditing ? 'Guardar Cambios' : 'Agregar Tarjeta'}
                     </Button>
-                    <Button variant="primary" onClick={handleSaveChanges}>
-                        Guardar Cambios
-                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal de Confirmación de Eliminación */}
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmar Eliminación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>¿Estás seguro de que deseas eliminar esta tarjeta?</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancelar</Button>
+                    <Button variant="danger" onClick={handleConfirmDelete}>Eliminar</Button>
                 </Modal.Footer>
             </Modal>
         </>

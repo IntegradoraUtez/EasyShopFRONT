@@ -7,12 +7,10 @@ import { useAuth } from '../../context/AuthContext';
 function CardsManageAddresses() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const idUser = user.user.id
+    const idUser = user.user.id;
     const [addresses, setAddresses] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
     const [currentAddressIndex, setCurrentAddressIndex] = useState(null);
     const [newAddress, setNewAddress] = useState({
         name: '',
@@ -23,7 +21,6 @@ function CardsManageAddresses() {
         postal_code: ''
     });
 
-    // CORS headers configuration
     const corsHeaders = {
         'Authorization': `Bearer ${user.token}`,
         'Content-Type': 'application/json'
@@ -32,14 +29,12 @@ function CardsManageAddresses() {
     useEffect(() => {
         axios.get(`https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/get_addresses_by_Usersid/${idUser}`, { headers: corsHeaders })
             .then(response => {
-                console.log('Response data:', response.data.addresses);
                 setAddresses(response.data.addresses || []);
             })
             .catch(error => {
                 console.error('Error fetching addresses:', error);
             });
     }, [idUser]);
-    
 
     const handleInsertAddress = () => {
         setIsEditing(false);
@@ -49,7 +44,8 @@ function CardsManageAddresses() {
             state: '',
             city: '',
             street: '',
-            postal_code: ''
+            postal_code: '',
+            Users_id: idUser
         });
         setShowModal(true);
     };
@@ -67,21 +63,19 @@ function CardsManageAddresses() {
             : 'https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/insert_address';
 
         const method = isEditing ? 'put' : 'post';
-        const addressPayload = { ...newAddress };
-
         axios({
             method,
             url,
-            data: addressPayload,
+            data: newAddress,
             headers: corsHeaders
         })
             .then(response => {
                 if (isEditing) {
                     const updatedAddresses = [...addresses];
-                    updatedAddresses[currentAddressIndex] = newAddress;
+                    updatedAddresses[currentAddressIndex] = response.data;
                     setAddresses(updatedAddresses);
                 } else {
-                    setAddresses([...addresses, response.data]);
+                    setAddresses(prevAddresses => [...prevAddresses, response.data]);
                 }
                 setShowModal(false);
             })
@@ -112,40 +106,23 @@ function CardsManageAddresses() {
         }
     };
 
-    const handleDelete = (index) => {
-        setSelectedAddressIndex(index);
-        setShowDeleteModal(true);
-    };
-
-    const handleConfirmDelete = () => {
-        const id = addresses[selectedAddressIndex].id;
-        axios.delete(`https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/delete_address/${id}`, { headers: corsHeaders })
-            .then(() => {
-                const updatedAddresses = addresses.filter((_, i) => i !== selectedAddressIndex);
-                setAddresses(updatedAddresses);
-                setShowDeleteModal(false);
-            })
-            .catch(error => {
-                console.error('Error deleting address:', error);
-            });
-    };
-
-    const handleToggleActivation = (index) => {
+    const handleToggleActivation = async (index) => {
         const id = addresses[index].id;
-        axios.post(`https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/toggle_address_active/${id}`, {}, { headers: corsHeaders })
-            .then(response => {
-                const updatedAddresses = [...addresses];
-                updatedAddresses[index] = response.data;
-                setAddresses(updatedAddresses);
-            })
-            .catch(error => {
-                console.error('Error toggling address activation:', error);
-            });
+        try {
+            await axios.patch(
+                `https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/toggle_address_active/${id}`,
+                {},
+                { headers: corsHeaders }
+            );
+            setAddresses(addresses.map((address, i) =>
+                i === index ? { ...address, active: !address.active } : address
+            ));
+        } catch (error) {
+            console.error('Error toggling address activation:', error);
+        }
     };
 
-    if (!user) {
-        return <p>Loading...</p>;
-    }
+    if (!user) return <p>Loading...</p>;
 
     return (
         <>
@@ -155,7 +132,6 @@ function CardsManageAddresses() {
                 </Col>
             </Row>
 
-            {/* Validación del rol del usuario */}
             {user.user?.type === 'user' && (
                 <>
                     <Row className='text-center'>
@@ -164,7 +140,7 @@ function CardsManageAddresses() {
                         </Col>
                     </Row>
 
-                    {Array.isArray(addresses) && addresses.length > 0 ? (
+                    {addresses.length > 0 ? (
                         addresses.map((address, index) => (
                             <Fragment key={index}>
                                 {index % 2 === 0 && (
@@ -185,13 +161,12 @@ function CardsManageAddresses() {
                                                         </Col>
                                                     </Row>
                                                     <Row className="justify-content-center mt-3">
-                                                        <Col xs={6} className="text-center mb-2">
-                                                            <Button variant="primary" className="responsive-button" onClick={() => handleEdit(index)}>Editar</Button>
-                                                        </Col>
+                                                        {address.active && (
+                                                            <Col xs={6} className="text-center mb-2">
+                                                                <Button variant="primary" className="responsive-button" onClick={() => handleEdit(index)}>Editar</Button>
+                                                            </Col>
+                                                        )}
                                                         <Col xs={6} className="text-center">
-                                                            <Button variant="danger" className="responsive-button" onClick={() => handleDelete(index)}>Eliminar</Button>
-                                                        </Col>
-                                                        <Col xs={12} className="text-center mt-2">
                                                             <Button variant="warning" className="responsive-button" onClick={() => handleToggleActivation(index)}>
                                                                 {address.active ? 'Desactivar' : 'Activar'}
                                                             </Button>
@@ -217,17 +192,32 @@ function CardsManageAddresses() {
                                                             </Col>
                                                         </Row>
                                                         <Row className="justify-content-center mt-3">
-                                                            <Col xs={6} className="text-center mb-2">
-                                                                <Button variant="primary" className="responsive-button" onClick={() => handleEdit(index + 1)}>Editar</Button>
-                                                            </Col>
-                                                            <Col xs={6} className="text-center">
-                                                                <Button variant="danger" className="responsive-button" onClick={() => handleDelete(index + 1)}>Eliminar</Button>
-                                                            </Col>
-                                                            <Col xs={12} className="text-center mt-2">
-                                                                <Button variant="warning" className="responsive-button" onClick={() => handleToggleActivation(index + 1)}>
-                                                                    {addresses[index + 1].active ? 'Desactivar' : 'Activar'}
-                                                                </Button>
-                                                            </Col>
+                                                            {addresses[index + 1].active ? (
+                                                                <Col xs={6} className="text-center mb-2">
+                                                                    <Button variant="primary" className="responsive-button" onClick={() => handleEdit(index + 1)}>Editar</Button>
+                                                                </Col>
+                                                            ) : (
+                                                                <Col xs={6} className="text-center mb-2">
+                                                                    {/* Si no está activa, no renderizar el botón */}
+                                                                </Col>
+                                                            )}
+                                                            {addresses[index + 1].active ? (
+                                                                <Col xs={6} className="text-center">
+                                                                    <Button variant="warning" className="responsive-button" onClick={() => handleToggleActivation(index + 1)}>
+                                                                        {addresses[index + 1].active ? 'Desactivar' : 'Activar'}
+                                                                    </Button>
+                                                                </Col>
+                                                            ) : (
+                                                                <Col xs={12} className="text-center mb-2">
+                                                                    {/* Si no está activa, no renderizar el botón */}
+                                                                    <Col xs={12} className="text-center">
+                                                                        <Button variant="warning" className="responsive-button" onClick={() => handleToggleActivation(index + 1)}>
+                                                                            {addresses[index + 1].active ? 'Desactivar' : 'Activar'}
+                                                                        </Button>
+                                                                    </Col>
+                                                                </Col>
+                                                            )}
+
                                                         </Row>
                                                     </Card.Body>
                                                 </Card>
@@ -238,11 +228,14 @@ function CardsManageAddresses() {
                             </Fragment>
                         ))
                     ) : (
-                        <p>No hay direcciones disponibles.</p>
+                        <Row className='text-center'>
+                            <Col>
+                                <p>No tienes direcciones registradas.</p>
+                            </Col>
+                        </Row>
                     )}
 
-
-                    {/* Modal for insert and edit */}
+                    {/* Modal para Agregar/Editar Dirección */}
                     <Modal show={showModal} onHide={() => setShowModal(false)}>
                         <Modal.Header closeButton>
                             <Modal.Title>{isEditing ? 'Editar Dirección' : 'Agregar Dirección'}</Modal.Title>
@@ -253,90 +246,67 @@ function CardsManageAddresses() {
                                     <Form.Label>Nombre</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Ingrese el nombre"
                                         name="name"
                                         value={newAddress.name}
                                         onChange={handleInputChange}
+                                        placeholder="Nombre de la dirección"
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="formCountry">
+                                <Form.Group controlId="formAddressCountry">
                                     <Form.Label>País</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Ingrese el país"
                                         name="country"
                                         value={newAddress.country}
                                         onChange={handleInputChange}
+                                        placeholder="País"
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="formState">
+                                <Form.Group controlId="formAddressState">
                                     <Form.Label>Estado</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Ingrese el estado"
                                         name="state"
                                         value={newAddress.state}
                                         onChange={handleInputChange}
+                                        placeholder="Estado"
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="formCity">
+                                <Form.Group controlId="formAddressCity">
                                     <Form.Label>Ciudad</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Ingrese la ciudad"
                                         name="city"
                                         value={newAddress.city}
                                         onChange={handleInputChange}
+                                        placeholder="Ciudad"
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="formStreet">
+                                <Form.Group controlId="formAddressStreet">
                                     <Form.Label>Calle</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Ingrese la calle"
                                         name="street"
                                         value={newAddress.street}
                                         onChange={handleInputChange}
+                                        placeholder="Calle"
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="formPostalCode">
+                                <Form.Group controlId="formAddressPostalCode">
                                     <Form.Label>Código Postal</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Ingrese el código postal"
                                         name="postal_code"
                                         value={newAddress.postal_code}
                                         onChange={handleInputChange}
+                                        placeholder="Código Postal"
                                     />
                                 </Form.Group>
+                                <Button variant="primary" onClick={handleSaveAddress}>
+                                    {isEditing ? 'Actualizar Dirección' : 'Agregar Dirección'}
+                                </Button>
                             </Form>
                         </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={() => setShowModal(false)}>
-                                Cerrar
-                            </Button>
-                            <Button variant="primary" onClick={handleSaveAddress}>
-                                {isEditing ? 'Guardar Cambios' : 'Agregar Dirección'}
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-
-                    {/* Delete confirmation modal */}
-                    <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Confirmar Eliminación</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            ¿Estás seguro de que quieres eliminar esta dirección?
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-                                Cancelar
-                            </Button>
-                            <Button variant="danger" onClick={handleConfirmDelete}>
-                                Eliminar
-                            </Button>
-                        </Modal.Footer>
                     </Modal>
                 </>
             )}

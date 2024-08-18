@@ -78,3 +78,10 @@
     background-color: #9B414F;
     border-color: #ECA4AF;
   }
+  
+  /* Agrega esto a tu archivo CSS */
+/* En tu archivo CSS */
+.invisible-button {
+    display: none; /* Oculta el botón completamente */
+}
+
