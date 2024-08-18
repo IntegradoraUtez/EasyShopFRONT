@@ -1,13 +1,23 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import './AdminPurchaseComponents.css'; // Importa el archivo de estilos
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 
 function AdminPurchaseComponents() {
   const {user} = useAuth();
+  const navigate = useNavigate;
+    
+  useEffect(() => {
+      if (!user || user.user.type !== 'admin') {
+          navigate('/'); 
+      } else {
+          console.log('Tipo:', user.user.type);
+          console.log('Token:', user.token);
+      }
 
-  const token = user.idToken
-  const role = user.user.type
+  }, [user, navigate]);
+
 
   return (
     <div className="purchase-table-container">

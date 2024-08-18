@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal, Form } fr
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
 import { useAuth } from '../../context/AuthContext';
-
+import axios from 'axios';
 
 export default function ProductsCard() {
 
@@ -18,6 +18,21 @@ export default function ProductsCard() {
             console.log('Tipo:', user.user.type);
             console.log('Token:', user.token);
         }
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
+                console.log(response.data);
+                if (response.data && Array.isArray(response.data.products)) {
+                    setProducts(response.data.products);
+                } else {
+                    console.error("Formato de datos inesperado:", response.data);
+                }
+            } catch (err) {
+                console.error("Error fetching products", err);
+            }
+        };
+        fetchProducts();
+
     }, [user, navigate]);
 
 

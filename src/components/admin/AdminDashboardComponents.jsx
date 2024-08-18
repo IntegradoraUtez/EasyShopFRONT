@@ -1,7 +1,7 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import { Row, Col, Card, Modal, Form, Button } from 'react-bootstrap';
 import '../landing/styleHomeScreen.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 
@@ -27,7 +27,17 @@ function AdminDashboardComponents() {
 
     const estado = user.active
 */
-    const role = user.user.type;
+const navigate = useNavigate;
+    
+useEffect(() => {
+    if (!user || user.user.type !== 'admin') {
+        navigate('/'); 
+    } else {
+        console.log('Tipo:', user.user.type);
+        console.log('Token:', user.token);
+    }
+
+}, [user, navigate]);
 
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [newCategory, setNewCategory] = useState({
