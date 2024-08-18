@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import iconProfile from './profileIcon.png';
 import Button from 'react-bootstrap/Button';
@@ -7,7 +7,8 @@ import Form from 'react-bootstrap/Form';
 import { useAuth } from '../../context/AuthContext';
 
 export const Profile = () => {
-  const {user} = useAuth();
+  const { user } = useAuth();
+
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
@@ -33,12 +34,12 @@ export const Profile = () => {
             <img src={iconProfile} alt="Perfil" className="profile-image" />
           </div>
           <div className="profile-details">
-            <h1>Nombre de Usuario</h1>
-            <p><strong>Correo:</strong> usuario@ejemplo.com</p>
-            <p><strong>Fecha de Nacimiento:</strong> 01/01/1990</p>
-            <p><strong>Género:</strong> Masculino</p>
-            <p><strong>Tipo de Usuario:</strong> Administrador</p>
-            <p><strong>Nombre Completo:</strong> Juan Pérez</p>
+            <h1>{user.username}</h1>
+            <p><strong>Correo:</strong> {user.user.email}</p>
+            <p><strong>Fecha de Nacimiento:</strong> {user.user.birthdate}</p>
+            <p><strong>Género:</strong> {user.user.gender}</p>
+            <p><strong>Tipo de Usuario:</strong> {user.user.type}</p>
+            <p><strong>Nombre Completo:</strong> {user.user.name} {user.user.lastname}</p>
           </div>
         </div>
         <div className="button-container">
