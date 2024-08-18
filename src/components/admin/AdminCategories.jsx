@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Card, Carousel, Col, Row, Button, Dropdown, Form, Modal } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import '../landing/styleHomeScreen.css'; // Asegúrate de ajustar la ruta al archivo de estilos según tu estructura de proyecto
+import { useAuth } from '../../context/AuthContext';
+
+
 
 function SingleCardWithCarousel({ categoria, images, onModify, onDeactivate }) {
     return (
@@ -33,6 +36,9 @@ function SingleCardWithCarousel({ categoria, images, onModify, onDeactivate }) {
 }
 
 export default function AdminCategories() {
+    const {user} = useAuth();
+
+
     const [searchTerm, setSearchTerm] = useState('');
     const [showActive, setShowActive] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);

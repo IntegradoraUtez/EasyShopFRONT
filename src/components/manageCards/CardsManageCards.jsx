@@ -4,6 +4,7 @@ import './manageCardsScreen.css';
 import { useNavigate } from 'react-router-dom';
 import chip from '../../assets/tarjeta-de-credito.png'
 import visa from '../../assets/simbolos.png'
+import { useAuth } from '../../context/AuthContext';
 
 const CardsData = [
     {
@@ -23,6 +24,8 @@ const CardsData = [
 ];
 
 function CardsManageCards() {
+    const {user} = useAuth();
+
     const navigate = useNavigate();
 
     const handleInsertNewCard = () => {
