@@ -38,7 +38,6 @@ export default function ProductsCard() {
 
 
     const [products, setProducts] = useState([]);
-
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -82,14 +81,19 @@ export default function ProductsCard() {
         setShowEditModal(true);
     };
 
-    const handleAddProduct = () => {
-        setProducts([...products, { 
-            ...newProduct, 
-            price: parseFloat(newProduct.price), 
-            discount: parseFloat(newProduct.discount), 
-            stock: parseInt(newProduct.stock) 
-        }]);
-        handleAddClose();
+    const handleAddProduct = async () => {
+        try {
+            await insertProducts(newProduct);
+            setProducts([...products, { 
+                ...newProduct, 
+                price: parseFloat(newProduct.price), 
+                discount: parseFloat(newProduct.discount), 
+                stock: parseInt(newProduct.stock) 
+            }]);
+            handleAddClose();
+        } catch (error) {
+            console.error('Error al agregar el producto:', error);
+        }
     };
 
     const handleEditProduct = () => {
@@ -150,6 +154,20 @@ export default function ProductsCard() {
         setProducts(sortedProducts);
     };
 
+
+    
+    const insertProducts = async (productData) => {
+        try {
+            const response = await axios.post(
+                'https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/insert_product',
+                newProduct
+            );
+            console.log('Producto insertado con éxito:', response.data);
+        } catch (error) {
+            console.error('Error al insertar el producto:', error);
+        }
+    };
+
     return (
         <>
             {/* Carrusel */}
@@ -197,11 +215,11 @@ export default function ProductsCard() {
                     </Col>
                 </Row>
 
-                <Row className="mt-5">
+                <Row className="mt-4">
                     {products.map((product, index) => (
                         <Col key={index} md={3} className="mb-4">
                             <Card>
-                                <Card.Img className="card-img" variant="top" src={product.image} />
+                                <Card.Img variant="top" src={product.image} />
                                 <Card.Body>
                                     <Card.Title>{product.name}</Card.Title>
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
