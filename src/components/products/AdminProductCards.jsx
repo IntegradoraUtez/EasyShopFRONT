@@ -17,7 +17,7 @@ export default function ProductsCard() {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
-            
+
                 if (response.data && Array.isArray(response.data.products)) {
                     setProducts(response.data.products);
                 } else {
@@ -75,7 +75,7 @@ export default function ProductsCard() {
         });
         setShowEditModal(true);
     };
-    
+
     const handleAddProduct = async () => {
         try {
             await insertProduct(newProduct);
@@ -97,7 +97,7 @@ export default function ProductsCard() {
             console.error('Error al actualizar el producto:', error);
         }
     };
-    
+
     const updateProduct = async (productId, productData) => {
         try {
             const response = await axios.put(
@@ -128,8 +128,7 @@ export default function ProductsCard() {
             throw error;
         }
     };
-    
-    
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewProduct({ ...newProduct, [name]: value });
@@ -146,10 +145,41 @@ export default function ProductsCard() {
         setNewProduct({ ...newProduct, [name]: value.slice(0, maxLength) });
     };
 
-    const handleDeactivateProduct = (product) => {
-        // Lógica para desactivar el producto
-        console.log('Desactivar producto', product);
+    const handleDeactivateProduct = async (product) => {
+        try {
+            await toggleProductActive(product.id);
+        } catch (error) {
+            console.error('Error al desactivar el producto:', error);
+        }
     };
+
+    const toggleProductActive = async (productId) => {
+        try {
+            const response = await axios.patch(
+                `https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/toggle_product_active/${productId}`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            console.log('Estado del producto actualizado con éxito:', response.data);
+            setProducts(products.map(product =>
+                product.id === productId ? { ...product, active: !product.active } : product
+            ));
+            
+        } catch (error) {
+            console.error('Error al cambiar el estado del producto:', error);
+            if (error.response) {
+                console.error('Datos de error:', error.response.data);
+                console.error('Estado del error:', error.response.status);
+            }
+            throw error;
+        }
+    };
+
 
     const sortProducts = (criteria) => {
         let sortedProducts;
@@ -206,7 +236,7 @@ export default function ProductsCard() {
                     image_type: file.type.split('/')[1] // 'jpeg' o 'png'
                 });
 
-                
+
             };
             reader.readAsDataURL(file);
         }
@@ -270,8 +300,12 @@ export default function ProductsCard() {
                                     <Card.Text><strong>Categoría:</strong> {product.category}</Card.Text>
                                     <div className="d-flex justify-content-between mt-2">
                                         <Button variant="secondary" size="sm" onClick={() => handleEditShow(product)}>Editar</Button>
-                                        <Button variant="danger" size="sm" onClick={() => handleDeactivateProduct(product)}>Desactivar</Button>
-                                    </div>
+                                        <Button
+                                            variant={product.active ? "danger" : "success"}
+                                            size="sm"
+                                            onClick={() => toggleProductActive(product.id)}>
+                                            {product.active ? "Desactivar" : "Activar"}
+                                        </Button></div>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -427,7 +461,7 @@ export default function ProductsCard() {
                                 onChange={handleInputNumber}
                             />
                         </Form.Group>
-                        
+
                         <Form.Group controlId="formProductCategory">
                             <Form.Label>Categoría</Form.Label>
                             <Form.Control
