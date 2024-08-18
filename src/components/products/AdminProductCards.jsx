@@ -11,7 +11,7 @@ export default function ProductsCard() {
             price: 19.99,
             discount: 0.1, // 10% de descuento
             stock: 15,
-            image: "https://via.placeholder.com/150",
+            image: "https://m.media-amazon.com/images/I/61k+1UDe73L.jpg",
             category: "Categoría 1"
         },
         {
@@ -20,7 +20,7 @@ export default function ProductsCard() {
             price: 29.99,
             discount: 0.2, // 20% de descuento
             stock: 8,
-            image: "https://via.placeholder.com/150",
+            image: "https://i.pinimg.com/736x/e4/b1/84/e4b1841cdda985a28432ab9d5492c12d.jpg",
             category: "Categoría 2"
         },
         {
