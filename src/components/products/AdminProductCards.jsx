@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal, Form } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
+import { useAuth } from '../../context/AuthContext';
+
 
 export default function ProductsCard() {
+
+
+    const {user, logout} = useAuth();
+
     const [products, setProducts] = useState([
         {
             name: "Producto 1",
@@ -187,6 +193,7 @@ export default function ProductsCard() {
         console.log('Desactivar producto', product);
     };
 
+    
     const sortProducts = (criteria) => {
         let sortedProducts;
         switch (criteria) {

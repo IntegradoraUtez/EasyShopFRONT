@@ -1,7 +1,14 @@
 import React from 'react';
 import './AdminPurchaseComponents.css'; // Importa el archivo de estilos
+import { useAuth } from '../../context/AuthContext';
+
 
 function AdminPurchaseComponents() {
+  const {user} = useAuth();
+
+  const token = user.idToken
+  const role = user.user.type
+
   return (
     <div className="purchase-table-container">
       <h2>Historial de Compras</h2>

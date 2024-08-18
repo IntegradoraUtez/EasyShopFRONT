@@ -1,7 +1,10 @@
 import React from 'react';
 import './AdminUsersScreenComponents.css'; // Importa el archivo de estilos
-
+import { useAuth } from '../../context/AuthContext';
 function AdminUsersScreenComponents() {
+  const {user} = useAuth();
+
+
   return (
     <div className="user-table-container">
       <h2>Gestión de Usuarios</h2>

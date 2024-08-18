@@ -2,8 +2,14 @@ import React, { useState, Fragment } from 'react';
 import { Row, Col, Card, Modal, Form, Button } from 'react-bootstrap';
 import '../landing/styleHomeScreen.css';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
 
 function AdminDashboardComponents() {
+
+    const {user} = useAuth();
+    const role = user.user.type;
+
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [newCategory, setNewCategory] = useState({
         name: '',

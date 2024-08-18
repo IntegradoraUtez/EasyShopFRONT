@@ -2,6 +2,7 @@ import React, { useState, Fragment } from 'react';
 import { Row, Col, Card, Button, Modal, Form } from 'react-bootstrap';
 import './manageAddressesScreen.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const addressData = [
     {
@@ -23,6 +24,8 @@ const addressData = [
 ];
 
 function CardsManageAddresses() {
+    const {user} = useAuth();
+
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);

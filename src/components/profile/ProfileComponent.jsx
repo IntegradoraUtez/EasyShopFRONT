@@ -4,8 +4,11 @@ import iconProfile from './profileIcon.png';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import { useAuth } from '../../context/AuthContext';
 
 export const Profile = () => {
+  const {user} = useAuth();
+
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
