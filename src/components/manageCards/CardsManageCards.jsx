@@ -63,8 +63,8 @@ function CardsManageCards() {
             alias: card.alias,
             card_number: card.card_number,
             card_owner: card.card_owner,
-            card_expiration: card.card_expiration, 
-            card_cvv: card.card_cvv, 
+            card_expiration: card.card_expiration,
+            card_cvv: card.card_cvv,
             card_type: card.card_type,
             card_zip: card.card_zip,
             Users_id: idUser
@@ -79,7 +79,7 @@ function CardsManageCards() {
 
     const handleSaveChanges = async () => {
         try {
-            console.log('Datos enviados:', editedCardData); 
+            console.log('Datos enviados:', editedCardData);
             await axios.put(
                 `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/update_paymentMethod_put`,
                 editedCardData,
@@ -93,16 +93,66 @@ function CardsManageCards() {
             setCardsData(cardsData.map(card =>
                 card.id === selectedCard.id ? { ...card, ...editedCardData } : card
             ));
-            console.log(editedCardData)
             handleCloseModal();
         } catch (error) {
             console.error('Error updating card:', error);
         }
     };
 
-    const handleDelete = (index) => {
-        console.log(`Eliminar tarjeta en índice: ${index}`);
+    const handleActive = async (card) => {
+        try {
+            await axios.patch(
+                `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/toggle_paymentMethod_active/${card.id}`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            // Actualizar solo la tarjeta que fue modificada
+            setCardsData(cardsData.map(c =>
+                c.id === card.id ? { ...c, active: !c.active } : c
+            ));
+        } catch (error) {
+            console.error('Error toggling card active state:', error);
+        }
     };
+
+    const handleAliasChange = (e) => {
+        const value = e.target.value;
+        if (value.length <= 30) {
+            setEditedCardData({ ...editedCardData, alias: value });
+        }
+    };
+
+    // Validación del número de tarjeta
+    const handleCardNumberChange = (e) => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value) && value.length <= 16) {
+            setEditedCardData({ ...editedCardData, card_number: value });
+        }
+    };
+
+    // Validación del nombre del propietario
+    const handleCardOwnerChange = (e) => {
+        const value = e.target.value;
+        if (/^[a-zA-Z\s]*$/.test(value) && value.length <= 30) {
+            setEditedCardData({ ...editedCardData, card_owner: value });
+        }
+    };
+
+    // Validación del código postal
+    const handleCardZipChange = (e) => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value) && value.length <= 5) {
+            setEditedCardData({ ...editedCardData, card_zip: value });
+        }
+    };
+
+
 
     if (!user || user.user.type !== 'user') {
         return <h2>No tienes permiso para ver esta página.</h2>;
@@ -192,7 +242,9 @@ function CardsManageCards() {
                                                         <Button variant="primary" className="responsive-button" onClick={() => handleEdit(card)}>Editar</Button>
                                                     </Col>
                                                     <Col xs={6} className="text-center">
-                                                        <Button variant="danger" className="responsive-button" onClick={() => handleDelete(index)}>Eliminar</Button>
+                                                        <Button variant={card.active ? "danger" : "success"} className="responsive-button" onClick={() => handleActive(card)}>
+                                                            {card.active ? "Desactivar" : "Activar"}
+                                                        </Button>
                                                     </Col>
                                                 </Row>
                                             </Card.Body>
@@ -252,7 +304,13 @@ function CardsManageCards() {
                                                             <Button variant="primary" className="responsive-button" onClick={() => handleEdit(cardsData[index + 1])}>Editar</Button>
                                                         </Col>
                                                         <Col xs={6} className="text-center">
-                                                            <Button variant="danger" className="responsive-button" onClick={() => handleDelete(index + 1)}>Eliminar</Button>
+                                                            <Button
+                                                                variant={cardsData[index + 1].active ? "danger" : "success"}
+                                                                className="responsive-button"
+                                                                onClick={() => handleActive(cardsData[index + 1])}
+                                                            >
+                                                                {cardsData[index + 1].active ? "Desactivar" : "Activar"}
+                                                            </Button>
                                                         </Col>
                                                     </Row>
                                                 </Card.Body>
@@ -279,7 +337,7 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Alias"
                                 value={editedCardData.alias || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, alias: e.target.value })}
+                                onChange={handleAliasChange}
                             />
                         </Form.Group>
                         <Form.Group controlId="formCardNumber">
@@ -288,7 +346,7 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Número de Tarjeta"
                                 value={editedCardData.card_number || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_number: e.target.value })}
+                                onChange={handleCardNumberChange}
                             />
                         </Form.Group>
                         <Form.Group controlId="formCardOwner">
@@ -297,17 +355,19 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Nombre Propietario"
                                 value={editedCardData.card_owner || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_owner: e.target.value })}
+                                onChange={handleCardOwnerChange}
                             />
                         </Form.Group>
                         <Form.Group controlId="formCardType">
                             <Form.Label>Tipo de Tarjeta</Form.Label>
                             <Form.Control
-                                type="text"
-                                placeholder="Tipo de Tarjeta"
+                                as="select"
                                 value={editedCardData.card_type || ''}
                                 onChange={(e) => setEditedCardData({ ...editedCardData, card_type: e.target.value })}
-                            />
+                            >
+                                <option value="Débito">Débito</option>
+                                <option value="Crédito">Crédito</option>
+                            </Form.Control>
                         </Form.Group>
                         <Form.Group controlId="formCardZip">
                             <Form.Label>Código Postal</Form.Label>
@@ -315,7 +375,7 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Código Postal"
                                 value={editedCardData.card_zip || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_zip: e.target.value })}
+                                onChange={handleCardZipChange}
                             />
                         </Form.Group>
                     </Form>
