@@ -9,12 +9,14 @@ import {
     FuncionIdentificarTipoTarjeta,
     FuncionFormatMesAño,
 } from './validaciones';
+import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 
 function NewCard() {
-
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
-
+    const userId = user.user.id
     const [cardData, setCardData] = useState({
         alias: "",
         card_number: "",
@@ -23,20 +25,28 @@ function NewCard() {
         card_zip: "",
         card_expiration: "",
         card_cvv: "",
+        Users_id: userId
     });
+
+    // Redirect if the user role is not 'user'
+    if (user.user.type !== 'user') {
+        navigate('/');
+        return null;
+    }
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        let newErrors = { ...errors };
 
-        if (name === 'card_owner' && !/^[A-Za-z\s]+$/.test(value)) {
-            setErrors({ ...errors, card_owner: 'El nombre solo debe contener letras.' });
-        } else if (name === 'card_zip' && (!/^\d*$/.test(value) || value.length > 5)) {
-            setErrors({ ...errors, card_zip: 'El código postal debe ser un número de hasta 5 dígitos.' });
-        } else if (name === 'card_cvv' && (!/^\d*$/.test(value) || value.length > 3)) {
-            setErrors({ ...errors, card_cvv: 'El CVV debe ser un número de 3 dígitos.' });
-        } else {
-            setErrors({ ...errors, [name]: null });
+        if (name === 'card_owner') {
+            newErrors.card_owner = /^[A-Za-z\s]+$/.test(value) ? null : 'El nombre solo debe contener letras.';
+        } else if (name === 'card_zip') {
+            newErrors.card_zip = /^\d{0,5}$/.test(value) ? null : 'El código postal debe ser un número de hasta 5 dígitos.';
+        } else if (name === 'card_cvv') {
+            newErrors.card_cvv = /^\d{0,3}$/.test(value) ? null : 'El CVV debe ser un número de 3 dígitos.';
         }
+
+        setErrors(newErrors);
 
         setCardData({
             ...cardData,
@@ -71,14 +81,28 @@ function NewCard() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
         if (validateFields()) {
-            console.log('Card Data:', cardData);
-            navigate('/user/manageCards');
+             // Axios request
+             axios.post('https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/insert_paymentMethod', cardData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`, // Si usas un token para autenticación
+                }
+            })
+            .then(response => {
+                console.log('Response:', response.data);
+                navigate('/user/manageCards');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al registrar la tarjeta. Por favor, inténtelo de nuevo.');
+            });
         } else {
             alert('Por favor, complete todos los campos correctamente.');
         }
     };
+    
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -148,7 +172,6 @@ function NewCard() {
             </Row>
             <Form onSubmit={handleSubmit} onKeyPress={handleKeyPress} className='mb-5'>
                 <Row className="justify-content-center">
-
                     <Col xs={12} md={6}>
                         <Form.Group controlId="formCardNumber">
                             <Form.Label>Número de Tarjeta</Form.Label>
@@ -247,7 +270,6 @@ function NewCard() {
                     </Button>
                 </Row>
             </Form>
-
         </>
     );
 }
