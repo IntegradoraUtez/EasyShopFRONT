@@ -13,17 +13,13 @@ export default function ProductsCard() {
     useEffect(() => {
         if (!user || user.user.type !== 'admin') {
             navigate('/');
-        } else {
-            console.log('Tipo:', user.user.type);
-            console.log('Token:', user.token);
         }
         const fetchProducts = async () => {
             try {
                 const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
-                console.log(response.data);
+            
                 if (response.data && Array.isArray(response.data.products)) {
                     setProducts(response.data.products);
-                    console.log(response.data)
                 } else {
                     console.error("Formato de datos inesperado:", response.data);
                 }
@@ -66,6 +62,7 @@ export default function ProductsCard() {
     };
 
     const handleEditClose = () => setShowEditModal(false);
+
     const handleEditShow = (product) => {
         setSelectedProduct(product);
         setNewProduct({
@@ -74,13 +71,11 @@ export default function ProductsCard() {
             price: product.price,
             discount: product.discount,
             stock: product.stock,
-            image_data: product.image_data,
-            image_type: product.image_type,
             category_id: product.category_id
         });
         setShowEditModal(true);
     };
-
+    
     const handleAddProduct = async () => {
         try {
             await insertProduct(newProduct);
@@ -91,13 +86,50 @@ export default function ProductsCard() {
         }
     };
 
-    const handleEditProduct = () => {
-        setProducts(products.map(product =>
-            product === selectedProduct ? newProduct : product
-        ));
-        handleEditClose();
+    const handleEditProduct = async () => {
+        try {
+            await updateProduct(selectedProduct.id, newProduct);
+            setProducts(products.map(product =>
+                product.id === selectedProduct.id ? { ...product, ...newProduct } : product
+            ));
+            handleEditClose();
+        } catch (error) {
+            console.error('Error al actualizar el producto:', error);
+        }
     };
-
+    
+    const updateProduct = async (productId, productData) => {
+        try {
+            const response = await axios.put(
+                `https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/update_product_put`,
+                {
+                    id: productId,
+                    name: productData.name,
+                    description: productData.description,
+                    price: productData.price,
+                    discount: productData.discount,
+                    stock: productData.stock,
+                    category_id: productData.category_id
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            console.log('Producto actualizado con éxito:', response.data);
+        } catch (error) {
+            console.error('Error al actualizar el producto:', error);
+            if (error.response) {
+                console.error('Datos de error:', error.response.data);
+                console.error('Estado del error:', error.response.status);
+            }
+            throw error;
+        }
+    };
+    
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewProduct({ ...newProduct, [name]: value });
@@ -142,7 +174,6 @@ export default function ProductsCard() {
 
     const insertProduct = async (productData) => {
         try {
-            console.log("data", productData)
             const response = await axios.post(
                 'https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/insert_product',
                 productData,
@@ -163,7 +194,6 @@ export default function ProductsCard() {
             throw error;
         }
     };
-
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -176,8 +206,6 @@ export default function ProductsCard() {
                     image_type: file.type.split('/')[1] // 'jpeg' o 'png'
                 });
 
-                const base64String = reader.result.split(',')[1];
-                console.log('Base64:', base64String);
                 
             };
             reader.readAsDataURL(file);
@@ -403,7 +431,7 @@ export default function ProductsCard() {
                         <Form.Group controlId="formProductCategory">
                             <Form.Label>Categoría</Form.Label>
                             <Form.Control
-                                type="text"
+                                type="number"
                                 placeholder="Categoría"
                                 name="category_id"
                                 value={newProduct.category_id}
