@@ -4,12 +4,13 @@ import { BsPersonCircle, BsFillCartDashFill } from "react-icons/bs";
 import { Dropdown, Modal, Button, Form } from 'react-bootstrap';
 import Logo from '../../src/assets/easyshop.png';
 import axios from 'axios';
-import { login } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 function Header() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const { login } = useAuth();
 
     const handleLogin = async () => {
         try {
@@ -21,7 +22,7 @@ function Header() {
             setShowLoginModal(false);
 
             const userData = {
-                token: response.data.Id_token,
+                token: response.data.auth.id_token,
                 user: response.data.user
             };
 

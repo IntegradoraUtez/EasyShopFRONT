@@ -8,6 +8,25 @@ import { useAuth } from '../../context/AuthContext';
 function AdminDashboardComponents() {
 
     const {user} = useAuth();
+
+    //JSON
+    /*
+    token = toooodo token PETICIONES
+    user: {
+        "active": 1,
+        "birthdate": "2001-06-20",
+        "email": "20193tn142@utez.edu.mx",
+        "gender": "Masculino",
+        "id": 18,
+        "lastname": "valencia",
+        "name": "darien",
+        "password": "$2b$12$qL7l939qIXM2FKiaTFPOK.gtBK6mtFm1ReFtL/VOefltgyVGTp66.",
+        "type": "admin",
+        "username": "darien"
+    }
+
+    const estado = user.active
+*/
     const role = user.user.type;
 
     const [showCategoryModal, setShowCategoryModal] = useState(false);

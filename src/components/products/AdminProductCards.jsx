@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal, Form } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
@@ -7,9 +7,15 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function ProductsCard() {
 
+    const {user} = useAuth();
 
-    const {user, logout} = useAuth();
-
+    useEffect(() => {
+        if (user) {
+            console.log('Usuario:', user.user);
+            console.log('Tipo:', user.user.type);
+            console.log('Token:', user.token);
+        }
+    }, [user]);
     const [products, setProducts] = useState([
         {
             name: "Producto 1",
@@ -193,7 +199,7 @@ export default function ProductsCard() {
         console.log('Desactivar producto', product);
     };
 
-    
+
     const sortProducts = (criteria) => {
         let sortedProducts;
         switch (criteria) {
@@ -239,6 +245,7 @@ export default function ProductsCard() {
                 <Row className="mt-2 align-items-center fixed-filters">
                     <Col md={6}>
                         <h5>Nombre de la categoría</h5>
+
                     </Col>
                     <Col md={6} className="text-end">
                         <Button style={{ marginRight: '8px', backgroundColor: 'transparent', color: 'black', border: '1px solid black' }}>
