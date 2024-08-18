@@ -1,8 +1,8 @@
-//Julio
 import React from 'react';
 import { Outlet, Link } from "react-router-dom";
 import { BsPersonCircle, BsFillCartDashFill } from "react-icons/bs";
-import Logo from '../../src/assets/easyshop.png'
+import { Dropdown } from 'react-bootstrap';
+import Logo from '../../src/assets/easyshop.png';
 
 function Header() {
     return (
@@ -21,12 +21,17 @@ function Header() {
                                 <Link className="nav-link" to="/admin/dashboard">Admin</Link>
                             </li>
                         </ul>
-                        <button className="btn" >
-                            <Link to="/profile">
+                        <Dropdown>
+                            <Dropdown.Toggle variant="transparent" id="user-dropdown">
                                 <BsPersonCircle size={25} />
-                            </Link>
-                        </button>
-                        <button className="btn">
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu>
+                                <Dropdown.Item as={Link} to="">Inicio de sesión</Dropdown.Item>
+                                <Dropdown.Item as={Link} to="/profile">Perfil</Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                        <button className="btn ms-2">
                             <Link to="/car">
                                 <BsFillCartDashFill size={25} />
                             </Link>
@@ -39,7 +44,7 @@ function Header() {
                 <Outlet />
             </div>
         </>
-    )
+    );
 }
 
-export default Header
+export default Header;
