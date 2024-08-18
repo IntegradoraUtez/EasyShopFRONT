@@ -13,8 +13,10 @@ function CardsManageCards() {
     const [cardsData, setCardsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
     const [editedCardData, setEditedCardData] = useState({});
+    const [loadingEdit, setLoadingEdit] = useState(false);
     const idUser = user?.user?.id;
 
     useEffect(() => {
@@ -62,13 +64,13 @@ function CardsManageCards() {
         setShowEditModal(true);
     };
 
-    const handleCloseModal = () => {
+    const handleCloseEditModal = () => {
         setShowEditModal(false);
     };
 
     const handleSaveChanges = async () => {
+        setLoadingEdit(true);
         try {
-            console.log('Datos enviados:', editedCardData);
             await axios.put(
                 `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/update_paymentMethod_put`,
                 editedCardData,
@@ -82,16 +84,24 @@ function CardsManageCards() {
             setCardsData(cardsData.map(card =>
                 card.id === selectedCard.id ? { ...card, ...editedCardData } : card
             ));
-            handleCloseModal();
+            handleCloseEditModal();
         } catch (error) {
             console.error('Error updating card:', error);
+        } finally {
+            setLoadingEdit(false);
         }
     };
 
-    const handleActive = async (card) => {
+    const handleActive = (card) => {
+        setSelectedCard(card);
+        setShowConfirmationModal(true);
+    };
+
+    const handleToggleActivation = async () => {
+        setShowConfirmationModal(false);
         try {
             await axios.patch(
-                `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/toggle_paymentMethod_active/${card.id}`,
+                `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/toggle_paymentMethod_active/${selectedCard.id}`,
                 {},
                 {
                     headers: {
@@ -102,7 +112,7 @@ function CardsManageCards() {
             );
 
             setCardsData(cardsData.map(c =>
-                c.id === card.id ? { ...c, active: !c.active } : c
+                c.id === selectedCard.id ? { ...c, active: !c.active } : c
             ));
         } catch (error) {
             console.error('Error toggling card active state:', error);
@@ -220,7 +230,7 @@ function CardsManageCards() {
             )}
 
             {/* Modal para editar tarjeta */}
-            <Modal show={showEditModal} onHide={handleCloseModal}>
+            <Modal show={showEditModal} onHide={handleCloseEditModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Editar Tarjeta</Modal.Title>
                 </Modal.Header>
@@ -274,11 +284,36 @@ function CardsManageCards() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
+                    <Button variant="secondary" onClick={handleCloseEditModal}>
+                        Cerrar
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={handleSaveChanges}
+                        disabled={loadingEdit}
+                    >
+                        {loadingEdit ? 'Guardando...' : 'Guardar Cambios'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal de Confirmación de Activación/Desactivación */}
+            <Modal show={showConfirmationModal} onHide={() => setShowConfirmationModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmar Acción</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    ¿Estás seguro de que deseas {selectedCard?.active ? 'desactivar' : 'activar'} esta tarjeta?
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowConfirmationModal(false)}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleSaveChanges}>
-                        Guardar Cambios
+                    <Button
+                        variant="primary"
+                        onClick={handleToggleActivation}
+                    >
+                        Confirmar
                     </Button>
                 </Modal.Footer>
             </Modal>
