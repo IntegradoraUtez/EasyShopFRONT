@@ -79,9 +79,10 @@
     border-color: #ECA4AF;
   }
   
-  /* Agrega esto a tu archivo CSS */
-/* En tu archivo CSS */
-.invisible-button {
-    display: none; /* Oculta el botón completamente */
+  .button-disabled {
+    background-color: #e0e0e0; /* Color de fondo más tenue */
+    border-color: #bdbdbd; /* Color de borde más tenue */
+    color: #9e9e9e; /* Color de texto más tenue */
+    cursor: not-allowed; /* Cambia el cursor para indicar que está deshabilitado */
 }
 
