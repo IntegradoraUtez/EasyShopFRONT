@@ -259,7 +259,7 @@ function NewCard() {
                                 name="alias"
                                 value={cardData.alias}
                                 onChange={handleInputChange}
-                                maxLength="15"
+                                maxLength="30"
                             />
                         </Form.Group>
                     </Col>

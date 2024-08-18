@@ -1,5 +1,5 @@
 import { React, Fragment, useEffect, useState } from 'react';
-import { Row, Col, Card, Button, Spinner, Modal, Form } from 'react-bootstrap'; // Importa el componente Modal de react-bootstrap
+import { Row, Col, Card, Button, Spinner, Modal, Form } from 'react-bootstrap';
 import './manageCardsScreen.css';
 import { useNavigate } from 'react-router-dom';
 import chip from '../../assets/tarjeta-de-credito.png';
@@ -12,8 +12,8 @@ function CardsManageCards() {
     const navigate = useNavigate();
     const [cardsData, setCardsData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showEditModal, setShowEditModal] = useState(false); // Estado para manejar el modal
-    const [selectedCard, setSelectedCard] = useState(null); // Estado para la tarjeta seleccionada
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedCard, setSelectedCard] = useState(null);
     const [editedCardData, setEditedCardData] = useState({});
     const idUser = user?.user?.id;
 
@@ -58,18 +58,7 @@ function CardsManageCards() {
 
     const handleEdit = (card) => {
         setSelectedCard(card);
-        setEditedCardData({
-            id: card.id,
-            alias: card.alias,
-            card_number: card.card_number,
-            card_owner: card.card_owner,
-            card_expiration: card.card_expiration,
-            card_cvv: card.card_cvv,
-            card_type: card.card_type,
-            card_zip: card.card_zip,
-            Users_id: idUser
-        });
-        console.log(card)
+        setEditedCardData({ ...card });
         setShowEditModal(true);
     };
 
@@ -112,7 +101,6 @@ function CardsManageCards() {
                 }
             );
 
-            // Actualizar solo la tarjeta que fue modificada
             setCardsData(cardsData.map(c =>
                 c.id === card.id ? { ...c, active: !c.active } : c
             ));
@@ -120,39 +108,6 @@ function CardsManageCards() {
             console.error('Error toggling card active state:', error);
         }
     };
-
-    const handleAliasChange = (e) => {
-        const value = e.target.value;
-        if (value.length <= 30) {
-            setEditedCardData({ ...editedCardData, alias: value });
-        }
-    };
-
-    // Validación del número de tarjeta
-    const handleCardNumberChange = (e) => {
-        const value = e.target.value;
-        if (/^\d*$/.test(value) && value.length <= 16) {
-            setEditedCardData({ ...editedCardData, card_number: value });
-        }
-    };
-
-    // Validación del nombre del propietario
-    const handleCardOwnerChange = (e) => {
-        const value = e.target.value;
-        if (/^[a-zA-Z\s]*$/.test(value) && value.length <= 30) {
-            setEditedCardData({ ...editedCardData, card_owner: value });
-        }
-    };
-
-    // Validación del código postal
-    const handleCardZipChange = (e) => {
-        const value = e.target.value;
-        if (/^\d*$/.test(value) && value.length <= 5) {
-            setEditedCardData({ ...editedCardData, card_zip: value });
-        }
-    };
-
-
 
     if (!user || user.user.type !== 'user') {
         return <h2>No tienes permiso para ver esta página.</h2>;
@@ -185,142 +140,82 @@ function CardsManageCards() {
                         </Col>
                     </Row>
                 ) : (
-                    cardsData.map((card, index) => (
-                        <Fragment key={index}>
-                            {index % 2 === 0 && (
-                                <Row className="align-items-center justify-content-center mb-4 mt-2">
-                                    <Col xs={12} md={6} className="justify-content-center mb-3 mb-md-0">
-                                        <Card className="address-card card-design">
-                                            <Card.Header className="text-center">{card.alias}</Card.Header>
+                    <Row>
+                        {cardsData.map((card) => (
+                            <Col key={card.id} xs={12} md={6} className="mb-4">
+                                <Card className="address-card card-design">
+                                    <Card.Header className="text-center">{card.alias}</Card.Header>
+                                    <Card.Body>
+                                        <Card className="address-card card-design-bank">
                                             <Card.Body>
-                                                <Card className="address-card card-design-bank">
-                                                    <Card.Body>
-                                                        <Row>
-                                                            <Col className="text-left">
-                                                                <img src={chip} alt="Chip" className="chip-image" />
-                                                            </Col>
-                                                            <Col className="text-right">
-                                                                <img src={visa} alt="Visa" className="visa-image" />
-                                                            </Col>
-                                                        </Row>
-                                                        <div className="bank-card">
-                                                            <Row>
-                                                                <Col>
-                                                                    <Row>
-                                                                        <Col className='text-card'>Número de Tarjeta</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_number}</Col>
-                                                                    </Row>
-                                                                    <Row className='mt-2'>
-                                                                        <Col className='text-card'>Nombre Propietario</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_owner}</Col>
-                                                                    </Row>
-                                                                </Col>
-                                                                <Col>
-                                                                    <Row>
-                                                                        <Col className='text-card'>Tipo de Tarjeta</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_type}</Col>
-                                                                    </Row>
-                                                                    <Row className='mt-2'>
-                                                                        <Col className='text-card'>Código Postal</Col>
-                                                                    </Row>
-                                                                    <Row>
-                                                                        <Col className='card-number'>{card.card_zip}</Col>
-                                                                    </Row>
-                                                                </Col>
-                                                            </Row>
-                                                        </div>
-                                                    </Card.Body>
-                                                </Card>
-                                                <Row className="justify-content-center mt-3">
-                                                    <Col xs={6} className="text-center mb-2">
-                                                        <Button variant="primary" className="responsive-button" onClick={() => handleEdit(card)}>Editar</Button>
+                                                <Row>
+                                                    <Col className="text-left">
+                                                        <img src={chip} alt="Chip" className="chip-image" />
                                                     </Col>
-                                                    <Col xs={6} className="text-center">
-                                                        <Button variant={card.active ? "danger" : "success"} className="responsive-button" onClick={() => handleActive(card)}>
-                                                            {card.active ? "Desactivar" : "Activar"}
-                                                        </Button>
+                                                    <Col className="text-right">
+                                                        <img src={visa} alt="Visa" className="visa-image" />
                                                     </Col>
                                                 </Row>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                    {cardsData[index + 1] && (
-                                        <Col xs={12} md={6} className="justify-content-center">
-                                            <Card className="address-card card-design">
-                                                <Card.Header className="text-center">{cardsData[index + 1].alias}</Card.Header>
-                                                <Card.Body>
-                                                    <Card className="address-card card-design-bank">
-                                                        <Card.Body>
+                                                <div className="bank-card">
+                                                    <Row>
+                                                        <Col>
                                                             <Row>
-                                                                <Col className="text-left">
-                                                                    <img src={chip} alt="Chip" className="chip-image" />
-                                                                </Col>
-                                                                <Col className="text-right">
-                                                                    <img src={visa} alt="Visa" className="visa-image" />
-                                                                </Col>
+                                                                <Col className='text-card'>Número de Tarjeta</Col>
                                                             </Row>
-                                                            <div className="bank-card">
-                                                                <Row>
-                                                                    <Col>
-                                                                        <Row>
-                                                                            <Col className='text-card'>Número de Tarjeta</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_number}</Col>
-                                                                        </Row>
-                                                                        <Row className='mt-2'>
-                                                                            <Col className='text-card'>Nombre Propietario</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_owner}</Col>
-                                                                        </Row>
-                                                                    </Col>
-                                                                    <Col>
-                                                                        <Row>
-                                                                            <Col className='text-card'>Tipo de Tarjeta</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_type}</Col>
-                                                                        </Row>
-                                                                        <Row className='mt-2'>
-                                                                            <Col className='text-card'>Código Postal</Col>
-                                                                        </Row>
-                                                                        <Row>
-                                                                            <Col className='card-number'>{cardsData[index + 1].card_zip}</Col>
-                                                                        </Row>
-                                                                    </Col>
-                                                                </Row>
-                                                            </div>
-                                                        </Card.Body>
-                                                    </Card>
-                                                    <Row className="justify-content-center mt-3">
-                                                        <Col xs={6} className="text-center mb-2">
-                                                            <Button variant="primary" className="responsive-button" onClick={() => handleEdit(cardsData[index + 1])}>Editar</Button>
+                                                            <Row>
+                                                                <Col className='card-number'>{card.card_number}</Col>
+                                                            </Row>
+                                                            <Row className='mt-2'>
+                                                                <Col className='text-card'>Nombre Propietario</Col>
+                                                            </Row>
+                                                            <Row>
+                                                                <Col className='card-number'>{card.card_owner}</Col>
+                                                            </Row>
                                                         </Col>
-                                                        <Col xs={6} className="text-center">
-                                                            <Button
-                                                                variant={cardsData[index + 1].active ? "danger" : "success"}
-                                                                className="responsive-button"
-                                                                onClick={() => handleActive(cardsData[index + 1])}
-                                                            >
-                                                                {cardsData[index + 1].active ? "Desactivar" : "Activar"}
-                                                            </Button>
+                                                        <Col>
+                                                            <Row>
+                                                                <Col className='text-card'>Tipo de Tarjeta</Col>
+                                                            </Row>
+                                                            <Row>
+                                                                <Col className='card-number'>{card.card_type}</Col>
+                                                            </Row>
+                                                            <Row className='mt-2'>
+                                                                <Col className='text-card'>Código Postal</Col>
+                                                            </Row>
+                                                            <Row>
+                                                                <Col className='card-number'>{card.card_zip}</Col>
+                                                            </Row>
                                                         </Col>
                                                     </Row>
-                                                </Card.Body>
-                                            </Card>
-                                        </Col>
-                                    )}
-                                </Row>
-                            )}
-                        </Fragment>
-                    ))
+                                                </div>
+                                            </Card.Body>
+                                        </Card>
+                                        <Row className="justify-content-center mt-3">
+                                            <Col xs={6} className="text-center mb-2">
+                                                <Button
+                                                    variant="primary"
+                                                    className="responsive-button"
+                                                    onClick={() => handleEdit(card)}
+                                                    disabled={!card.active}
+                                                >
+                                                    Editar
+                                                </Button>
+                                            </Col>
+                                            <Col xs={6} className="text-center">
+                                                <Button
+                                                    variant={card.active ? "danger" : "success"}
+                                                    className="responsive-button"
+                                                    onClick={() => handleActive(card)}
+                                                >
+                                                    {card.active ? "Desactivar" : "Activar"}
+                                                </Button>
+                                            </Col>
+                                        </Row>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
                 )
             )}
 
@@ -337,7 +232,7 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Alias"
                                 value={editedCardData.alias || ''}
-                                onChange={handleAliasChange}
+                                onChange={(e) => setEditedCardData({ ...editedCardData, alias: e.target.value })}
                             />
                         </Form.Group>
                         <Form.Group controlId="formCardNumber">
@@ -346,7 +241,7 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Número de Tarjeta"
                                 value={editedCardData.card_number || ''}
-                                onChange={handleCardNumberChange}
+                                onChange={(e) => setEditedCardData({ ...editedCardData, card_number: e.target.value })}
                             />
                         </Form.Group>
                         <Form.Group controlId="formCardOwner">
@@ -355,19 +250,17 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Nombre Propietario"
                                 value={editedCardData.card_owner || ''}
-                                onChange={handleCardOwnerChange}
+                                onChange={(e) => setEditedCardData({ ...editedCardData, card_owner: e.target.value })}
                             />
                         </Form.Group>
                         <Form.Group controlId="formCardType">
                             <Form.Label>Tipo de Tarjeta</Form.Label>
                             <Form.Control
-                                as="select"
+                                type="text"
+                                placeholder="Tipo de Tarjeta"
                                 value={editedCardData.card_type || ''}
                                 onChange={(e) => setEditedCardData({ ...editedCardData, card_type: e.target.value })}
-                            >
-                                <option value="Débito">Débito</option>
-                                <option value="Crédito">Crédito</option>
-                            </Form.Control>
+                            />
                         </Form.Group>
                         <Form.Group controlId="formCardZip">
                             <Form.Label>Código Postal</Form.Label>
@@ -375,7 +268,7 @@ function CardsManageCards() {
                                 type="text"
                                 placeholder="Código Postal"
                                 value={editedCardData.card_zip || ''}
-                                onChange={handleCardZipChange}
+                                onChange={(e) => setEditedCardData({ ...editedCardData, card_zip: e.target.value })}
                             />
                         </Form.Group>
                     </Form>
