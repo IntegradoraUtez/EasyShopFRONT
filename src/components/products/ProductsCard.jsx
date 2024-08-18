@@ -11,7 +11,7 @@ export default function ProductsCard() {
     const handleProcessCarBuy = () => {
         navigate('/car')
     }
-    const [products, setProducts] = useState(null);
+    const [products, setProducts] = useState([]);
     const [show, setShow] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -44,19 +44,36 @@ export default function ProductsCard() {
 
 
     useEffect(() => {
-        // Función para obtener los productos
         const fetchProducts = async () => {
-          try {
-            const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
-            setProducts(response.data); // Asumimos que los productos están en response.data
-            
-          } catch (err) {
-           
-          }
+            try {
+                const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
+                console.log(response.data);
+                if (response.data && Array.isArray(response.data.products)) {
+                    setProducts(response.data.products);
+                } else {
+                    console.error("Formato de datos inesperado:", response.data);
+                }
+            } catch (err) {
+                console.error("Error fetching products", err);
+            }
         };
+       
+        const fetchCategories = async() => {
+                    try {
+                const response = await axios.get('');
+                console.log(response.data);
+                if (response.data && Array.isArray(response.data.products)) {
+                    setProducts(response.data.products);
+                } else {
+                    console.error("Formato de datos inesperado:", response.data);
+                }
+            } catch (error) {
+                
+            }
+        }
     
-        fetchProducts(); // Llamada a la función para obtener los productos al cargar el componente
-      }, []); 
+        fetchProducts();
+    }, []);
 
     return (
         <>
