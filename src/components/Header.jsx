@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { BsPersonCircle, BsFillCartDashFill } from "react-icons/bs";
 import { Dropdown, Modal, Button, Form } from 'react-bootstrap';
 import Logo from '../../src/assets/easyshop.png';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Swal from 'sweetalert2';
 
 function Header() {
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -13,32 +13,64 @@ function Header() {
     const [password, setPassword] = useState('');
 
     const { user, login, logout } = useAuth();
-
     const navigate = useNavigate();
+
     const handleLogin = async () => {
         try {
             const response = await axios.post('https://ha7f9zowr1.execute-api.us-east-1.amazonaws.com/Prod/login', {
                 username,
                 password
             });
-            console.log('Login successful:', response.data);
-            setShowLoginModal(false);
 
             const userData = {
                 token: response.data.auth.id_token,
                 user: response.data.user
             };
 
-            // Llamar a la función login del contexto para almacenar los datos del usuario
             login(userData);
+
+            setShowLoginModal(false);
+
+            // Mostrar SweetAlert de confirmación de inicio de sesión
+            Swal.fire({
+                icon: 'success',
+                title: 'Inicio de sesión exitoso',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
         } catch (error) {
             console.error('Login error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al iniciar sesión',
+                text: 'Verifica tus credenciales e inténtalo de nuevo.'
+            });
         }
     };
 
     const handleLogout = () => {
-        logout();  // Llamar a la función logout del contexto de autenticación
-        navigate('/');  // Redirigir al usuario a la página principal u otra página después del logout
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Cerrarás tu sesión actual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                logout();
+                navigate('/');  // Redirigir al usuario a la página principal
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sesión cerrada',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        });
     };
 
     return (
@@ -125,7 +157,6 @@ function Header() {
                     <Button variant="primary" onClick={handleLogin}>
                         Iniciar sesión
                     </Button>
-
                 </Modal.Footer>
             </Modal>
         </>
