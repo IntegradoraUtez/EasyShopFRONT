@@ -24,14 +24,18 @@ export default function ProductsCard() {
             console.error('No se ha seleccionado una imagen o producto.');
             return;
         }
-    
+        console.log("aqui esta", selectedImageProduct.id);
+        console.log("y.....", newProduct);
+        
         try {
+
+
             const response = await axios.post(
                 'https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/upload_product_image',
                 {
-                    image_name_id: selectedImageProduct.id,  // Nombre del parámetro ajustado según la Lambda
-                    image_data: newProduct.image_data,       // Asegurarse de enviar la imagen en base64
-                    image_type: newProduct.image_type,       // Tipo de la imagen (jpeg, png, etc.)
+                    image_data: newProduct.image_data, 
+                    image_name_id: selectedImageProduct.id,  
+                    image_type: newProduct.image_type,       
                 },
                 {
                     headers: {
@@ -40,7 +44,7 @@ export default function ProductsCard() {
                     }
                 }
             );
-    
+
             console.log('Imagen del producto actualizada con éxito:', response.data);
             handleEditImageClose();
         } catch (error) {
@@ -51,8 +55,8 @@ export default function ProductsCard() {
             }
         }
     };
-    
-    
+
+
     useEffect(() => {
         if (!user || user.user.type !== 'admin') {
             navigate('/');
@@ -522,30 +526,30 @@ export default function ProductsCard() {
             </Modal>
 
             <Modal show={showEditImageModal} onHide={handleEditImageClose}>
-    <Modal.Header closeButton>
-        <Modal.Title>Editar Imagen del Producto</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-        <Form>
-            <Form.Group controlId="formProductImageEdit">
-                <Form.Label>Subir Nueva Imagen</Form.Label>
-                <Form.Control
-                    type="file"
-                    accept="image/png, image/jpeg"
-                    onChange={handleImageChange}
-                />
-            </Form.Group>
-        </Form>
-    </Modal.Body>
-    <Modal.Footer>
-        <Button variant="secondary" onClick={handleEditImageClose}>
-            Cerrar
-        </Button>
-        <Button variant="primary" onClick={handleUploadImage}>
-            Guardar Imagen
-        </Button>
-    </Modal.Footer>
-</Modal>
+                <Modal.Header closeButton>
+                    <Modal.Title>Editar Imagen del Producto</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formProductImageEdit">
+                            <Form.Label>Subir Nueva Imagen</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                onChange={handleImageChange}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleEditImageClose}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={handleUploadImage}>
+                        Guardar Imagen
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
         </>
     );
