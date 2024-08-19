@@ -92,7 +92,7 @@ export default function AdminCategories() {
                     }
                 }
             );
-            await fetchCategories(); // Refrescar la lista de categorías después de agregar una nueva
+            await fetchCategories(); 
             setShowAddModal(false);
             Swal.fire({
                 icon: 'success',
@@ -116,8 +116,8 @@ const updateCategory = async (categoryId, categoryData) => {
         const response = await axios.put(
             `https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/update_category_put`,
             {
-                id: categoryId, // Asegúrate de que el campo sea correcto
-                name: categoryData.name, // Asegúrate de que 'name' es lo que la API espera
+                id: categoryId,
+                name: categoryData.name, 
             },
             {
                 headers: {
@@ -128,7 +128,7 @@ const updateCategory = async (categoryId, categoryData) => {
         );
 
         console.log('Categoría actualizada con éxito:', response.data);
-        await fetchCategories(); // Refrescar la lista de categorías después de la actualización
+        await fetchCategories(); 
         Swal.fire({
             icon: 'success',
             title: 'Categoría actualizada con éxito',
