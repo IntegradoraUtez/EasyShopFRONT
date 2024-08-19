@@ -9,10 +9,10 @@ import { useAuth } from '../../context/AuthContext';
 export default function ProductsCard() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [products, setProducts] = useState([]); // Inicialización de 'products'
-    const [filteredProducts, setFilteredProducts] = useState([]); // Inicialización de 'filteredProducts'
-    const [searchName, setSearchName] = useState(''); // Estado para la búsqueda por nombre
-    const [searchCategory, setSearchCategory] = useState(''); // Estado para la búsqueda por categoría
+    const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [searchName, setSearchName] = useState(''); 
+    const [searchCategory, setSearchCategory] = useState(''); 
     const [showEditImageModal, setShowEditImageModal] = useState(false);
     const [selectedImageProduct, setSelectedImageProduct] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -390,7 +390,6 @@ export default function ProductsCard() {
 
     return (
         <>
-            {/* Carrusel */}
             <div className="carousel-container">
                 <Carousel className="custom-carousel">
                     <Carousel.Item>
@@ -404,7 +403,6 @@ export default function ProductsCard() {
                             <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
                         </Carousel.Caption>
                     </Carousel.Item>
-                    {/* Agrega más items del carrusel si es necesario */}
                 </Carousel>
             </div>
 
@@ -476,8 +474,6 @@ export default function ProductsCard() {
                     ))}
                 </Row>
             </Container>
-
-            {/* Modal para agregar producto */}
             <Modal show={showAddModal} onHide={handleAddClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>Agregar Nuevo Producto</Modal.Title>
@@ -566,7 +562,6 @@ export default function ProductsCard() {
                 </Modal.Footer>
             </Modal>
 
-            {/* Modal para editar producto */}
             <Modal show={showEditModal} onHide={handleEditClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>Editar Producto</Modal.Title>
