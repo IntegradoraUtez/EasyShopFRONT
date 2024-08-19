@@ -9,8 +9,20 @@ import Swal from 'sweetalert2';
 
 function Header() {
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [registerData, setRegisterData] = useState({
+        username: '',
+        email: '',
+        name: '',
+        lastname: '',
+        birthdate: '',
+        gender: ''
+    });
+    const [tempPassword, setTempPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     const { user, login, logout } = useAuth();
     const navigate = useNavigate();
@@ -30,8 +42,9 @@ function Header() {
             login(userData);
 
             setShowLoginModal(false);
+            setUsername(''); // Clear username after successful login
+            setPassword(''); // Clear password after successful login
 
-            // Mostrar SweetAlert de confirmación de inicio de sesión
             Swal.fire({
                 icon: 'success',
                 title: 'Inicio de sesión exitoso',
@@ -45,6 +58,76 @@ function Header() {
                 icon: 'error',
                 title: 'Error al iniciar sesión',
                 text: 'Verifica tus credenciales e inténtalo de nuevo.'
+            });
+        }
+    };
+
+    const handleRegister = async () => {
+        try {
+            const response = await axios.post('https://ewjkx0lte6.execute-api.us-east-1.amazonaws.com/Prod/insert_user', registerData);
+            setUsername(registerData.username); // Guarda el username después del registro exitoso
+            setShowRegisterModal(false);
+            setRegisterData({
+                username: '',
+                email: '',
+                name: '',
+                lastname: '',
+                birthdate: '',
+                gender: ''
+            }); // Clear registration data
+            setShowChangePasswordModal(true);
+            Swal.fire({
+                icon: 'success',
+                title: 'Registro exitoso',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } catch (error) {
+            console.error('Registration error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al registrarse',
+                text: 'Verifica los datos e inténtalo de nuevo.'
+            });
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (!username) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'El nombre de usuario no está disponible. Inténtalo de nuevo.'
+            });
+            return;
+        }
+
+        try {
+            const passwordData = {
+                username,
+                temp_password: tempPassword,
+                new_password: newPassword
+            };
+
+            console.log('Change password data:', passwordData);  // Imprime los datos de cambio de contraseña
+
+            await axios.patch('https://ewjkx0lte6.execute-api.us-east-1.amazonaws.com/Prod/update_user_temp_password_patch', passwordData);
+            
+            setShowChangePasswordModal(false);
+            setTempPassword(''); // Clear temporary password
+            setNewPassword(''); // Clear new password
+            Swal.fire({
+                icon: 'success',
+                title: 'Contraseña actualizada',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } catch (error) {
+            console.error('Change password error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al actualizar la contraseña',
+                text: 'Verifica los datos e inténtalo de nuevo.'
             });
         }
     };
@@ -63,6 +146,8 @@ function Header() {
             if (result.isConfirmed) {
                 logout();
                 navigate('/');  // Redirigir al usuario a la página principal
+                setUsername(''); // Clear username when logging out
+                setPassword(''); // Clear password when logging out
                 Swal.fire({
                     icon: 'success',
                     title: 'Sesión cerrada',
@@ -98,9 +183,14 @@ function Header() {
 
                             <Dropdown.Menu>
                                 {!user ? (
-                                    <Dropdown.Item onClick={() => setShowLoginModal(true)}>
-                                        Inicio de sesión
-                                    </Dropdown.Item>
+                                    <>
+                                        <Dropdown.Item onClick={() => setShowLoginModal(true)}>
+                                            Inicio de sesión
+                                        </Dropdown.Item>
+                                        <Dropdown.Item onClick={() => setShowRegisterModal(true)}>
+                                            Regístrate
+                                        </Dropdown.Item>
+                                    </>
                                 ) : (
                                     <>
                                         <Dropdown.Item as={Link} to="/profile">Perfil</Dropdown.Item>
@@ -123,7 +213,7 @@ function Header() {
             </div>
 
             {/* Login Modal */}
-            <Modal show={showLoginModal} onHide={() => setShowLoginModal(false)}>
+            <Modal show={showLoginModal} onHide={() => { setShowLoginModal(false); setUsername(''); setPassword(''); }}>
                 <Modal.Header closeButton>
                     <Modal.Title>Inicio de sesión</Modal.Title>
                 </Modal.Header>
@@ -151,11 +241,132 @@ function Header() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowLoginModal(false)}>
+                    <Button variant="secondary" onClick={() => { setShowLoginModal(false); setUsername(''); setPassword(''); }}>
                         Cancelar
                     </Button>
                     <Button variant="primary" onClick={handleLogin}>
                         Iniciar sesión
+                    </Button>
+                </Modal.Footer>
+                <Modal.Footer>
+                    <Button variant="link" onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); }}>
+                        ¿No tienes cuenta? Regístrate aquí
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Register Modal */}
+            <Modal show={showRegisterModal} onHide={() => { setShowRegisterModal(false); setRegisterData({ username: '', email: '', name: '', lastname: '', birthdate: '', gender: '' }); }}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Registro</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3" controlId="formRegisterUsername">
+                            <Form.Label>Nombre de usuario</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Ingresa tu nombre de usuario"
+                                value={registerData.username}
+                                onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formRegisterEmail">
+                            <Form.Label>Correo electrónico</Form.Label>
+                            <Form.Control 
+                                type="email" 
+                                placeholder="Ingresa tu correo electrónico"
+                                value={registerData.email}
+                                onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formRegisterName">
+                            <Form.Label>Nombre</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Ingresa tu nombre"
+                                value={registerData.name}
+                                onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formRegisterLastname">
+                            <Form.Label>Apellido</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Ingresa tu apellido"
+                                value={registerData.lastname}
+                                onChange={(e) => setRegisterData({ ...registerData, lastname: e.target.value })}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formRegisterBirthdate">
+                            <Form.Label>Fecha de nacimiento</Form.Label>
+                            <Form.Control 
+                                type="date" 
+                                placeholder="Ingresa tu fecha de nacimiento"
+                                value={registerData.birthdate}
+                                onChange={(e) => setRegisterData({ ...registerData, birthdate: e.target.value })}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formRegisterGender">
+                            <Form.Label>Género</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Ingresa tu género"
+                                value={registerData.gender}
+                                onChange={(e) => setRegisterData({ ...registerData, gender: e.target.value })}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => { setShowRegisterModal(false); setRegisterData({ username: '', email: '', name: '', lastname: '', birthdate: '', gender: '' }); }}>
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleRegister}>
+                        Registrarse
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Change Password Modal */}
+            <Modal show={showChangePasswordModal} onHide={() => { setShowChangePasswordModal(false); setTempPassword(''); setNewPassword(''); }}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Actualizar contraseña</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3" controlId="formTempPassword">
+                            <Form.Label>Contraseña temporal</Form.Label>
+                            <Form.Control 
+                                type="password" 
+                                placeholder="Ingresa la contraseña temporal"
+                                value={tempPassword}
+                                onChange={(e) => setTempPassword(e.target.value)}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formNewPassword">
+                            <Form.Label>Contraseña nueva</Form.Label>
+                            <Form.Control 
+                                type="password" 
+                                placeholder="Ingresa tu nueva contraseña"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => { setShowChangePasswordModal(false); setTempPassword(''); setNewPassword(''); }}>
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleChangePassword}>
+                        Actualizar contraseña
                     </Button>
                 </Modal.Footer>
             </Modal>
