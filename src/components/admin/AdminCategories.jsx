@@ -7,12 +7,29 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-function SingleCard({ id, name, active, onModify, onToggleActive }) {
+import { Carousel } from 'react-bootstrap'; // Importar Carousel
+
+function SingleCard({ id, name, active, onModify, onToggleActive, onAddImage, images }) {  // Añadir 'images' como prop
     return (
         <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center mb-3 mb-md-0">
             <Card className="product-card mt-3">
                 <Card.Body>
                     <Card.Title className="responsive-text-card">{name}</Card.Title>
+
+                    {images.length > 0 && (
+                        <Carousel>
+                            {images.map((image, index) => (
+                                <Carousel.Item key={index}>
+                                    <img
+                                        className="d-block w-100"
+                                        src={`data:image/jpeg;base64,${image}`}
+                                        alt={`Imagen ${index + 1}`}
+                                    />
+                                </Carousel.Item>
+                            ))}
+                        </Carousel>
+                    )}
+
                     <div className="d-flex flex-column mt-2">
                         <Button
                             variant="secondary"
@@ -29,12 +46,22 @@ function SingleCard({ id, name, active, onModify, onToggleActive }) {
                         >
                             {active ? "Desactivar" : "Activar"}
                         </Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            className="mt-2"
+                            onClick={() => onAddImage(id)}
+                        >
+                            Agregar Imagen
+                        </Button>
                     </div>
                 </Card.Body>
             </Card>
         </Col>
     );
 }
+
+
 
 
 export default function AdminCategories() {
@@ -50,6 +77,114 @@ export default function AdminCategories() {
     const [cardsData, setCardsData] = useState([]);
     const [newCategory, setNewCategory] = useState({});
     const [editCategory, setEditCategory] = useState({ id: null, name: '' });
+
+    const [selectedCategoryForImage, setSelectedCategoryForImage] = useState(null);
+    const [newCategoryImage, setNewCategoryImage] = useState(null);
+    const [newCategoryImageType, setNewCategoryImageType] = useState('');
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewCategoryImage(reader.result.split(',')[1]); // Base64 encoded string
+                setNewCategoryImageType(file.type.split('/')[1]); // e.g., 'jpeg', 'png'
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const uploadCategoryImage = async (categoryId) => {
+        if (!newCategoryImage || !newCategoryImageType) {
+            console.error('No se ha seleccionado una imagen.');
+            return;
+        }
+
+        try {
+            const response = await axios.post(
+                'https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/upload_category_image',
+                {
+                    image_data: newCategoryImage,
+                    image_type: newCategoryImageType,
+                    image_name_id: categoryId,
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            console.log('Imagen de la categoría subida con éxito:', response.data);
+            Swal.fire({
+                icon: 'success',
+                title: 'Imagen de la categoría subida con éxito',
+                showConfirmButton: false,
+                timer: 1500,
+            });
+        } catch (error) {
+            console.error('Error al subir la imagen de la categoría:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al subir la imagen',
+                text: 'Ocurrió un error al subir la imagen. Inténtalo de nuevo.',
+            });
+        }
+    };
+    const [showUploadImageModal, setShowUploadImageModal] = useState(false);
+
+
+    const handleAddImage = (categoryId) => {
+        setSelectedCategory(categoryId);
+        setShowUploadImageModal(true);
+    };
+
+
+
+
+    const fetchCategoryImages = async (categoryId) => {
+        try {
+            const response = await axios.get(
+                `https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/get_category_images_by_id/${categoryId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            return response.data.images || [];
+        } catch (error) {
+            console.error(`Error al obtener imágenes de la categoría ${categoryId}:`, error);
+            return [];
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     useEffect(() => {
         if (!user || user.user.type !== 'admin') {
@@ -68,10 +203,16 @@ export default function AdminCategories() {
                 }
             });
 
-            console.log(response.data);
-
             if (response.data && Array.isArray(response.data.categories)) {
-                setCardsData(response.data.categories);
+                const categories = response.data.categories;
+
+                // Para cada categoría, obtenemos las imágenes
+                const categoriesWithImages = await Promise.all(categories.map(async (category) => {
+                    const images = await fetchCategoryImages(category.id);
+                    return { ...category, images };
+                }));
+
+                setCardsData(categoriesWithImages);
             } else {
                 console.error("Formato de datos inesperado:", response.data);
             }
@@ -79,6 +220,7 @@ export default function AdminCategories() {
             console.error('Error al obtener las categorías:', error);
         }
     };
+
 
     const insertCategory = async (categoryData) => {
         try {
@@ -92,7 +234,7 @@ export default function AdminCategories() {
                     }
                 }
             );
-            await fetchCategories(); 
+            await fetchCategories();
             setShowAddModal(false);
             Swal.fire({
                 icon: 'success',
@@ -109,46 +251,47 @@ export default function AdminCategories() {
         }
     };
 
-const updateCategory = async (categoryId, categoryData) => {
-    try {
-        console.log('Datos enviados:', { id_category: categoryId, name: categoryData.name });
+    const updateCategory = async (categoryId, categoryData) => {
+        try {
+            console.log('Datos enviados:', { id_category: categoryId, name: categoryData.name });
 
-        const response = await axios.put(
-            `https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/update_category_put`,
-            {
-                id: categoryId,
-                name: categoryData.name, 
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${user.token}`,
-                    'Content-Type': 'application/json'
+            const response = await axios.put(
+                `https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/update_category_put`,
+                {
+                    id: categoryId,
+                    name: categoryData.name,
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json'
+                    }
                 }
+            );
+
+            console.log('Categoría actualizada con éxito:', response.data);
+            await fetchCategories();
+            setShowUploadImageModal(false);
+            Swal.fire({
+                icon: 'success',
+                title: 'Categoría actualizada con éxito',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } catch (error) {
+            console.error('Error al actualizar la categoría:', error);
+
+            if (error.response) {
+                console.error('Datos de error:', error.response.data);
             }
-        );
 
-        console.log('Categoría actualizada con éxito:', response.data);
-        await fetchCategories(); 
-        Swal.fire({
-            icon: 'success',
-            title: 'Categoría actualizada con éxito',
-            showConfirmButton: false,
-            timer: 1500
-        });
-    } catch (error) {
-        console.error('Error al actualizar la categoría:', error);
-
-        if (error.response) {
-            console.error('Datos de error:', error.response.data);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al actualizar la categoría',
+                text: 'Ocurrió un error al actualizar la categoría. Inténtalo de nuevo.'
+            });
         }
-
-        Swal.fire({
-            icon: 'error',
-            title: 'Error al actualizar la categoría',
-            text: 'Ocurrió un error al actualizar la categoría. Inténtalo de nuevo.'
-        });
-    }
-};
+    };
 
 
 
@@ -185,7 +328,6 @@ const updateCategory = async (categoryId, categoryData) => {
                 console.log(response);
 
                 await fetchCategories();
-                // Refrescar la lista de productos después de activar/desactivar
                 Swal.fire({
                     icon: 'success',
                     title: `Categoría ${action}ada con éxito`,
@@ -216,10 +358,10 @@ const updateCategory = async (categoryId, categoryData) => {
         setShowEditModal(true);
     };
 
-const handleEditCategory = async () => {
-    await updateCategory(editCategory.id, editCategory); 
-    setShowEditModal(false);
-};
+    const handleEditCategory = async () => {
+        await updateCategory(editCategory.id, editCategory);
+        setShowEditModal(false);
+    };
 
     const handleDeactivateCategory = () => {
         setShowConfirmDeactivateModal(false);
@@ -282,9 +424,12 @@ const handleEditCategory = async () => {
                         active={card.active === 1}
                         onModify={handleModifyCategory}
                         onToggleActive={() => toggleProductActive(card.id, card.active === 1)}
+                        onAddImage={handleAddImage}
+                        images={card.images} // Pasar las imágenes aquí
                     />
                 ))}
             </Row>
+
 
 
             {/* Modal para Agregar Categoría */}
@@ -361,6 +506,29 @@ const handleEditCategory = async () => {
                     </Button>
                     <Button variant="danger" onClick={handleDeactivateCategory}>
                         Confirmar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showUploadImageModal} onHide={() => setShowUploadImageModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Subir Imagen para la Categoría</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form.Group controlId="formCategoryImage">
+                        <Form.Label>Seleccionar Imagen</Form.Label>
+                        <Form.Control
+                            type="file"
+                            onChange={handleImageChange}
+                        />
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowUploadImageModal(false)}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={() => uploadCategoryImage(selectedCategory)}>
+                        Subir Imagen
                     </Button>
                 </Modal.Footer>
             </Modal>

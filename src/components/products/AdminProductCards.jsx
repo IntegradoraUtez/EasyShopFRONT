@@ -29,6 +29,13 @@ export default function ProductsCard() {
         category_id: ''
     });
 
+
+
+
+
+
+    
+
     const showLoading = () => {
         Swal.fire({
             title: 'Cargando...',
