@@ -4,10 +4,12 @@ import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getCartItems, saveCartItems } from '../../context/CartUtils';
+import { useAuth } from '../../context/AuthContext'; // Asegúrate de importar tu hook de autenticación
 import './ProductsCard.css'
 
 export default function ProductsCard() {
     const navigate = useNavigate();
+    const { user } = useAuth(); // Aquí obtenemos la información del usuario
     const [products, setProducts] = useState([]);
     const [cartItems, setCartItems] = useState([]);
     const [show, setShow] = useState(false);
@@ -116,14 +118,16 @@ export default function ProductsCard() {
                                     <Card.Title>{product.name}</Card.Title>
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
                                     <Card.Text><strong>Categoría:</strong> {product.category}</Card.Text>
-                                    <div className="d-flex justify-content-center">
-                                        <Button variant="primary" onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAddToCart(product);
-                                        }}>
-                                            Agregar al carrito
-                                        </Button>
-                                    </div>
+                                    {user.user.type === 'user' && (
+                                        <div className="d-flex justify-content-center">
+                                            <Button variant="primary" onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleAddToCart(product);
+                                            }}>
+                                                Agregar al carrito
+                                            </Button>
+                                        </div>
+                                    )}
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -147,12 +151,14 @@ export default function ProductsCard() {
                     <Button variant="secondary" onClick={handleClose}>
                         Cerrar
                     </Button>
-                    <Button variant="primary" onClick={() => {
-                        handleAddToCart(selectedProduct);
-                        handleClose();
-                    }}>
-                        Agregar al carrito de compra
-                    </Button>
+                    {user.user.type === 'user' && (
+                        <Button variant="primary" onClick={() => {
+                            handleAddToCart(selectedProduct);
+                            handleClose();
+                        }}>
+                            Agregar al carrito de compra
+                        </Button>
+                    )}
                 </Modal.Footer>
             </Modal>
         </>

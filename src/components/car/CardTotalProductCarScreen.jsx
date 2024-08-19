@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import './styleCarScreen.css';
 import { useAuth } from '../../context/AuthContext';
 
@@ -10,13 +11,14 @@ function CardTotalProductCarScreen() {
     const [cartItems, setCartItems] = useState([]);
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [addresses, setAddresses] = useState([]);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+    const [selectedAddress, setSelectedAddress] = useState('');
     const { user } = useAuth();
     const userId = user.user.id;
 
     useEffect(() => {
         // Recuperar los datos del carrito desde localStorage
         const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-        console.log('Carrito recuperado:', storedCart); // Verificar los datos del carrito
         setCartItems(storedCart);
 
         // Obtener métodos de pago del usuario
@@ -27,17 +29,17 @@ function CardTotalProductCarScreen() {
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${user?.token}` // Reemplaza con el token si es necesario
+                            'Authorization': `Bearer ${user?.token}`
                         }
                     }
                 );
                 setPaymentMethods(response.data.paymentMethod || []);
-                console.log(response.data.paymentMethod)
             } catch (error) {
                 console.error('Error al obtener los métodos de pago:', error);
             }
         };
 
+        // Obtener direcciones del usuario
         const fetchAddresses = async () => {
             try {
                 const response = await axios.get(
@@ -45,20 +47,19 @@ function CardTotalProductCarScreen() {
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${user?.token}` // Reemplaza con el token si es necesario
+                            'Authorization': `Bearer ${user?.token}`
                         }
                     }
                 );
                 setAddresses(response.data.addresses || []);
-                console.log(response.data)
             } catch (error) {
-                console.error('Error al obtener los métodos de pago:', error);
+                console.error('Error al obtener las direcciones:', error);
             }
-        }
+        };
 
         fetchAddresses();
         fetchPaymentMethods();
-    }, [userId]);
+    }, [userId, user?.token]);
 
     // Calcular el total antes del descuento
     const calculateTotalBeforeDiscount = () => {
@@ -80,9 +81,73 @@ function CardTotalProductCarScreen() {
         return totalBeforeDiscount - totalDiscount;
     };
 
-    const handleButtonBuy = () => {
-        // Lógica para procesar la compra
-        navigate('/purchase-confirmation'); // Redirige a una página de confirmación
+    // Manejar la compra
+    const handleButtonBuy = async () => {
+        // Validar que se hayan seleccionado todos los datos necesarios
+        if (!selectedPaymentMethod || !selectedAddress) {
+            Swal.fire({
+                title: 'Datos incompletos',
+                text: 'Por favor selecciona un método de pago y una dirección de envío antes de realizar la compra.',
+                icon: 'warning',
+                confirmButtonText: 'Aceptar'
+            });
+            return;
+        }
+
+        // Mostrar spinner de carga
+        Swal.fire({
+            title: 'Procesando la compra...',
+            text: 'Por favor espera mientras procesamos tu compra',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const purchaseData = {
+                totalPrice: totalAfterDiscount(),
+                datetime: new Date().toISOString(),
+                users_id: userId,
+                paymentMethod_id: selectedPaymentMethod,
+                address_id: selectedAddress,
+                products: cartItems.map(item => ({ id: item.id }))
+            };
+
+            const response = await axios.post(
+                'https://u5cudf8m2b.execute-api.us-east-1.amazonaws.com/Prod/insert_purchase',
+                purchaseData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                Swal.fire({
+                    title: '¡Compra exitosa!',
+                    text: 'Tu compra ha sido realizada con éxito.',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                }).then(() => {
+                    navigate('/');
+                    localStorage.removeItem('cartItems');
+                });
+            } else {
+                throw new Error('Error en la compra');
+            }
+        } catch (error) {
+            // Ocultar el spinner y mostrar la alerta de error
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un problema al realizar la compra. Por favor, intenta de nuevo.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+            console.error('Error al realizar la compra:', error);
+        }
     };
 
     return (
@@ -123,8 +188,12 @@ function CardTotalProductCarScreen() {
                     </Row>
                     <Row className="align-items-center">
                         <Col className="text-center my-2">
-                            <Form.Select aria-label="Default select example" className='mb-2'>
-                                <option>Selecciona una tarjeta</option>
+                            <Form.Select
+                                aria-label="Selecciona una tarjeta"
+                                className='mb-2'
+                                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                            >
+                                <option value=''>Selecciona una tarjeta</option>
                                 {paymentMethods.filter(method => method.active === 1).map((method, index) => (
                                     <option key={index} value={method.id}>
                                         {method.alias} (**** {method.card_number.slice(-4)})
@@ -142,11 +211,15 @@ function CardTotalProductCarScreen() {
                     </Row>
                     <Row className="align-items-center">
                         <Col className="text-center my-2">
-                            <Form.Select aria-label="Default select example" className='mb-2'>
-                                <option>Selecciona una dirección de envío</option>
-                                {addresses.filter(method => method.active === 1).map((method, index) => (
-                                    <option key={index} value={method.id}>
-                                        {method.name} - {method.city},{method.country},{method.postal_code}
+                            <Form.Select
+                                aria-label="Selecciona una dirección de envío"
+                                className='mb-2'
+                                onChange={(e) => setSelectedAddress(e.target.value)}
+                            >
+                                <option value=''>Selecciona una dirección de envío</option>
+                                {addresses.filter(address => address.active === 1).map((address, index) => (
+                                    <option key={index} value={address.id}>
+                                        {address.name} - {address.city},{address.country},{address.postal_code}
                                     </option>
                                 ))}
                             </Form.Select>
