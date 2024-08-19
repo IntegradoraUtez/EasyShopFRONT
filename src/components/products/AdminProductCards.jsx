@@ -1,18 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal, Form } from 'react-bootstrap';
-import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
-import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
-import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import { HiChevronDown } from "react-icons/hi2";
 import Swal from 'sweetalert2';
-
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProductsCard() {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [products, setProducts] = useState([]); // Inicialización de 'products'
+    const [filteredProducts, setFilteredProducts] = useState([]); // Inicialización de 'filteredProducts'
+    const [searchName, setSearchName] = useState(''); // Estado para la búsqueda por nombre
+    const [searchCategory, setSearchCategory] = useState(''); // Estado para la búsqueda por categoría
     const [showEditImageModal, setShowEditImageModal] = useState(false);
     const [selectedImageProduct, setSelectedImageProduct] = useState(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [newProduct, setNewProduct] = useState({
+        name: '',
+        description: '',
+        price: 0,
+        discount: 0,
+        stock: 0,
+        image_data: '',
+        image_type: '',
+        category_id: ''
+    });
+
     const showLoading = () => {
         Swal.fire({
             title: 'Cargando...',
@@ -23,12 +39,18 @@ export default function ProductsCard() {
             }
         });
     };
-    
+
     const closeLoading = () => {
         Swal.close();
     };
 
+    const handleNameChange = (e) => {
+        setSearchName(e.target.value);
+    };
 
+    const handleCategoryChange = (e) => {
+        setSearchCategory(e.target.value);
+    };
 
     const handleEditImageShow = (product) => {
         setSelectedImageProduct(product);
@@ -42,16 +64,16 @@ export default function ProductsCard() {
             console.error('No se ha seleccionado una imagen o producto.');
             return;
         }
-    
+
         showLoading();
-    
+
         try {
             const response = await axios.post(
                 'https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/upload_product_image',
                 {
-                    image_data: newProduct.image_data, 
-                    image_name_id: selectedImageProduct.id,  
-                    image_type: newProduct.image_type,       
+                    image_data: newProduct.image_data,
+                    image_name_id: selectedImageProduct.id,
+                    image_type: newProduct.image_type,
                 },
                 {
                     headers: {
@@ -60,16 +82,16 @@ export default function ProductsCard() {
                     }
                 }
             );
-    
+
             closeLoading();
-    
+
             Swal.fire({
                 icon: 'success',
                 title: 'Imagen del producto actualizada con éxito',
                 showConfirmButton: false,
                 timer: 1500
             });
-    
+
             handleEditImageClose();
         } catch (error) {
             closeLoading();
@@ -85,8 +107,6 @@ export default function ProductsCard() {
             });
         }
     };
-    
-    
 
     useEffect(() => {
         if (!user || user.user.type !== 'admin') {
@@ -106,23 +126,22 @@ export default function ProductsCard() {
             }
         };
         fetchProducts();
-
     }, [user, navigate]);
 
-    const [products, setProducts] = useState([]);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [newProduct, setNewProduct] = useState({
-        name: '',
-        description: '',
-        price: 0,
-        discount: 0,
-        stock: 0,
-        image_data: '',
-        image_type: '',
-        category_id: ''
-    });
+    useEffect(() => {
+        filterProducts();
+    }, [searchName, searchCategory, products]);
+
+    const filterProducts = () => {
+        let filtered = products;
+        if (searchName) {
+            filtered = filtered.filter(product => product.name.toLowerCase().includes(searchName.toLowerCase()));
+        }
+        if (searchCategory) {
+            filtered = filtered.filter(product => product.category.toLowerCase().includes(searchCategory.toLowerCase()));
+        }
+        setFilteredProducts(filtered);
+    };
 
     const handleAddClose = () => setShowAddModal(false);
     const handleAddShow = () => {
@@ -156,25 +175,25 @@ export default function ProductsCard() {
 
     const handleAddProduct = async () => {
         showLoading();
-    
+
         try {
             await insertProduct(newProduct);
             setProducts([...products, newProduct]);
-    
+
             closeLoading();
-    
+
             Swal.fire({
                 icon: 'success',
                 title: 'Producto agregado con éxito',
                 showConfirmButton: false,
                 timer: 1500
             });
-    
+
             handleAddClose();
         } catch (error) {
             closeLoading();
             console.error('Error al agregar el producto:', error);
-    
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error al agregar el producto',
@@ -182,31 +201,30 @@ export default function ProductsCard() {
             });
         }
     };
-    
-    
+
     const handleEditProduct = async () => {
         showLoading();
-    
+
         try {
             await updateProduct(selectedProduct.id, newProduct);
             setProducts(products.map(product =>
                 product.id === selectedProduct.id ? { ...product, ...newProduct } : product
             ));
-    
+
             closeLoading();
-    
+
             Swal.fire({
                 icon: 'success',
                 title: 'Producto actualizado con éxito',
                 showConfirmButton: false,
                 timer: 1500
             });
-    
+
             handleEditClose();
         } catch (error) {
             closeLoading();
             console.error('Error al actualizar el producto:', error);
-    
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error al actualizar el producto',
@@ -214,7 +232,6 @@ export default function ProductsCard() {
             });
         }
     };
-    
 
     const updateProduct = async (productId, productData) => {
         try {
@@ -263,10 +280,9 @@ export default function ProductsCard() {
         setNewProduct({ ...newProduct, [name]: value.slice(0, maxLength) });
     };
 
-
     const toggleProductActive = async (productId) => {
         showLoading();
-    
+
         try {
             const response = await axios.patch(
                 `https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/toggle_product_active/${productId}`,
@@ -278,20 +294,20 @@ export default function ProductsCard() {
                     }
                 }
             );
-    
+
             closeLoading();
-    
+
             Swal.fire({
                 icon: 'success',
                 title: 'Estado del producto actualizado con éxito',
                 showConfirmButton: false,
                 timer: 1500
             });
-    
+
             setProducts(products.map(product =>
                 product.id === productId ? { ...product, active: !product.active } : product
             ));
-    
+
         } catch (error) {
             closeLoading();
             console.error('Error al cambiar el estado del producto:', error);
@@ -299,17 +315,17 @@ export default function ProductsCard() {
                 console.error('Datos de error:', error.response.data);
                 console.error('Estado del error:', error.response.status);
             }
-    
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error al cambiar el estado del producto',
                 text: 'Ocurrió un error al cambiar el estado del producto. Inténtalo de nuevo.'
             });
-    
+
             throw error;
         }
     };
-    
+
 
     const sortProducts = (criteria) => {
         let sortedProducts;
@@ -396,31 +412,47 @@ export default function ProductsCard() {
                 <Row className="mt-2 align-items-center fixed-filters">
                     <Col md={6}>
                         <h5>Nombre de la categoría</h5>
-
                     </Col>
                     <Col md={6} className="text-end">
-                        <Button style={{ marginRight: '8px', backgroundColor: 'transparent', color: 'black', border: '1px solid black' }}>
-                            Filtros <HiAdjustmentsHorizontal />
-                        </Button>
-                        <Button style={{ marginRight: '8px', backgroundColor: 'transparent', color: 'black', border: '1px solid black' }} onClick={handleAddShow}>
-                            Agregar Producto
-                        </Button>
-                        <Dropdown as="div" style={{ display: 'inline-block' }}>
-                            <Dropdown.Toggle style={{ backgroundColor: 'transparent', color: 'black', border: '1px solid black' }}>
-                                Ordenar <HiChevronDown />
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item onClick={() => sortProducts('name-asc')}>Nombre: A-Z</Dropdown.Item>
-                                <Dropdown.Item onClick={() => sortProducts('name-desc')}>Nombre: Z-A</Dropdown.Item>
-                                <Dropdown.Item onClick={() => sortProducts('price-asc')}>Precio: Menor a Mayor</Dropdown.Item>
-                                <Dropdown.Item onClick={() => sortProducts('price-desc')}>Precio: Mayor a Menor</Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
+                        <Row>
+                            <Col md={3}>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Buscar por nombre"
+                                    value={searchName}
+                                    onChange={handleNameChange}
+                                />
+                            </Col>
+                            <Col md={3}>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Buscar por categoría"
+                                    value={searchCategory}
+                                    onChange={handleCategoryChange}
+                                />
+                            </Col>
+                            <Col>
+                                <Button style={{ marginRight: '8px', backgroundColor: 'transparent', color: 'black', border: '1px solid black' }} onClick={handleAddShow}>
+                                    Agregar Producto
+                                </Button>
+                                <Dropdown as="div" style={{ display: 'inline-block' }}>
+                                    <Dropdown.Toggle style={{ backgroundColor: 'transparent', color: 'black', border: '1px solid black' }}>
+                                        Ordenar <HiChevronDown />
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item onClick={() => sortProducts('name-asc')}>Nombre: A-Z</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => sortProducts('name-desc')}>Nombre: Z-A</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => sortProducts('price-asc')}>Precio: Menor a Mayor</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => sortProducts('price-desc')}>Precio: Mayor a Menor</Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Col>
+                        </Row>
                     </Col>
                 </Row>
 
                 <Row className="mt-4">
-                    {products.map((product, index) => (
+                    {filteredProducts.map((product, index) => (
                         <Col key={index} md={3} className="mb-4">
                             <Card>
                                 <Card.Img variant="top" src={product.image} />
