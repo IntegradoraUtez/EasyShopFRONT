@@ -6,17 +6,15 @@ import chip from '../../assets/tarjeta-de-credito.png';
 import visa from '../../assets/simbolos.png';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 function CardsManageCards() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [cardsData, setCardsData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showEditModal, setShowEditModal] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [selectedCard, setSelectedCard] = useState(null);
-    const [editedCardData, setEditedCardData] = useState({});
-    const [loadingEdit, setLoadingEdit] = useState(false);
     const idUser = user?.user?.id;
 
     useEffect(() => {
@@ -57,49 +55,28 @@ function CardsManageCards() {
     const handleInsertNewCard = () => {
         navigate('/user/insertCard');
     };
-
-    const handleEdit = (card) => {
-        setSelectedCard(card);
-        setEditedCardData({ ...card });
-        setShowEditModal(true);
-    };
-
-    const handleCloseEditModal = () => {
-        setShowEditModal(false);
-    };
-
-    const handleSaveChanges = async () => {
-        setLoadingEdit(true);
-        try {
-            await axios.put(
-                `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/update_paymentMethod_put`,
-                editedCardData,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${user.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            setCardsData(cardsData.map(card =>
-                card.id === selectedCard.id ? { ...card, ...editedCardData } : card
-            ));
-            handleCloseEditModal();
-        } catch (error) {
-            console.error('Error updating card:', error);
-        } finally {
-            setLoadingEdit(false);
-        }
-    };
-
+   
     const handleActive = (card) => {
         setSelectedCard(card);
         setShowConfirmationModal(true);
     };
 
     const handleToggleActivation = async () => {
+        // Mostrar mensaje de carga
+        Swal.fire({
+            title: 'Procesando...',
+            text: 'Por favor, espere mientras se realiza la acción.',
+            icon: 'info',
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    
         setShowConfirmationModal(false);
         try {
+            // Realizar la petición para cambiar el estado de la tarjeta
             await axios.patch(
                 `https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/toggle_paymentMethod_active/${selectedCard.id}`,
                 {},
@@ -110,14 +87,39 @@ function CardsManageCards() {
                     }
                 }
             );
-
+    
+            // Actualizar el estado de las tarjetas
             setCardsData(cardsData.map(c =>
                 c.id === selectedCard.id ? { ...c, active: !c.active } : c
             ));
+    
+            // Cerrar el mensaje de carga
+            Swal.close();
+    
+            // Mostrar mensaje de éxito
+            Swal.fire({
+                title: 'Éxito',
+                text: `La tarjeta ha sido ${selectedCard.active ? 'desactivada' : 'activada'} correctamente.`,
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            });
         } catch (error) {
             console.error('Error toggling card active state:', error);
+            
+            // Cerrar el mensaje de carga
+            Swal.close();
+    
+            // Mostrar mensaje de error
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un problema al cambiar el estado de la tarjeta.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
     };
+    
+    
 
     if (!user || user.user.type !== 'user') {
         return <h2>No tienes permiso para ver esta página.</h2>;
@@ -201,17 +203,8 @@ function CardsManageCards() {
                                             </Card.Body>
                                         </Card>
                                         <Row className="justify-content-center mt-3">
-                                            <Col xs={6} className="text-center mb-2">
-                                                <Button
-                                                    variant="primary"
-                                                    className="responsive-button"
-                                                    onClick={() => handleEdit(card)}
-                                                    disabled={!card.active}
-                                                >
-                                                    Editar
-                                                </Button>
-                                            </Col>
-                                            <Col xs={6} className="text-center">
+                                            
+                                            <Col xs={12} className="text-center">
                                                 <Button
                                                     variant={card.active ? "danger" : "success"}
                                                     className="responsive-button"
@@ -229,75 +222,9 @@ function CardsManageCards() {
                 )
             )}
 
-            {/* Modal para editar tarjeta */}
-            <Modal show={showEditModal} onHide={handleCloseEditModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Editar Tarjeta</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group controlId="formAlias">
-                            <Form.Label>Alias</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Alias"
-                                value={editedCardData.alias || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, alias: e.target.value })}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formCardNumber">
-                            <Form.Label>Número de Tarjeta</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Número de Tarjeta"
-                                value={editedCardData.card_number || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_number: e.target.value })}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formCardOwner">
-                            <Form.Label>Nombre Propietario</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Nombre Propietario"
-                                value={editedCardData.card_owner || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_owner: e.target.value })}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formCardType">
-                            <Form.Label>Tipo de Tarjeta</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Tipo de Tarjeta"
-                                value={editedCardData.card_type || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_type: e.target.value })}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formCardZip">
-                            <Form.Label>Código Postal</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Código Postal"
-                                value={editedCardData.card_zip || ''}
-                                onChange={(e) => setEditedCardData({ ...editedCardData, card_zip: e.target.value })}
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseEditModal}>
-                        Cerrar
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={handleSaveChanges}
-                        disabled={loadingEdit}
-                    >
-                        {loadingEdit ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+          
 
-            {/* Modal de Confirmación de Activación/Desactivación */}
+            {/* Modal de confirmación para activar/desactivar tarjeta */}
             <Modal show={showConfirmationModal} onHide={() => setShowConfirmationModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Acción</Modal.Title>
@@ -309,10 +236,7 @@ function CardsManageCards() {
                     <Button variant="secondary" onClick={() => setShowConfirmationModal(false)}>
                         Cancelar
                     </Button>
-                    <Button
-                        variant="primary"
-                        onClick={handleToggleActivation}
-                    >
+                    <Button variant="primary" onClick={handleToggleActivation}>
                         Confirmar
                     </Button>
                 </Modal.Footer>

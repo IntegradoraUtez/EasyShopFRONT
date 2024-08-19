@@ -11,6 +11,7 @@ import {
 } from './validaciones';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 function NewCard() {
     const { user } = useAuth();
@@ -83,8 +84,20 @@ function NewCard() {
         e.preventDefault();
     
         if (validateFields()) {
-             // Axios request
-             axios.post('https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/insert_paymentMethod', cardData, {
+            // Mostrar mensaje de carga
+            Swal.fire({
+                title: 'Procesando...',
+                text: 'Por favor, espere mientras se realiza la acción.',
+                icon: 'info',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            // Axios request
+            axios.post('https://fm97msirk9.execute-api.us-east-1.amazonaws.com/Prod/insert_paymentMethod', cardData, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`, // Si usas un token para autenticación
@@ -92,16 +105,33 @@ function NewCard() {
             })
             .then(response => {
                 console.log('Response:', response.data);
-                navigate('/user/manageCards');
+    
+                // Cerrar mensaje de carga y mostrar mensaje de éxito
+                Swal.fire({
+                    title: 'Éxito',
+                    text: 'La tarjeta se registró correctamente.',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                }).then(() => {
+                    navigate('/user/manageCards');
+                });
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al registrar la tarjeta. Por favor, inténtelo de nuevo.');
+    
+                // Cerrar mensaje de carga y mostrar mensaje de error
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Hubo un problema al registrar la tarjeta. Por favor, inténtelo de nuevo.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
             });
         } else {
             alert('Por favor, complete todos los campos correctamente.');
         }
     };
+    
     
 
     const handleKeyPress = (e) => {
