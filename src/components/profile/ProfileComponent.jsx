@@ -26,6 +26,9 @@ export const Profile = () => {
     navigate('/user/manageCards');
   };
 
+  const handleViewPurchases = () => {
+    navigate('/user/viewPurchases');
+  };
   return (
     <div className="profile-container">
       <div className="profile-card">
@@ -46,6 +49,7 @@ export const Profile = () => {
           <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
           <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
           <button className="profile-button" onClick={handleManageCards}>Administrar tarjetas de pago</button>
+          <button className="profile-button" onClick={handleViewPurchases}>Historial de Compras</button>
         </div>
       </div>
 
