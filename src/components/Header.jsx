@@ -206,11 +206,13 @@ function Header() {
                                 )}
                             </Dropdown.Menu>
                         </Dropdown>
-                        <button className="btn ms-2">
-                            <Link to="/car">
-                                <BsFillCartDashFill size={25} />
-                            </Link>
-                        </button>
+                        {user && user.user.type === 'user' && (
+                            <button className="btn ms-2">
+                                <Link to="/car">
+                                    <BsFillCartDashFill size={25} />
+                                </Link>
+                            </button>
+                        )}
                     </div>
                 </div>
             </nav>
@@ -269,7 +271,8 @@ function Header() {
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <Form.Group className="mb-3" controlId="formRegisterUsername">
+                        {/* Form fields for registration */}
+                        <Form.Group className="mb-3" controlId="formUsername">
                             <Form.Label>Nombre de usuario</Form.Label>
                             <Form.Control 
                                 type="text" 
@@ -279,17 +282,17 @@ function Header() {
                             />
                         </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formRegisterEmail">
-                            <Form.Label>Correo electrónico</Form.Label>
+                        <Form.Group className="mb-3" controlId="formEmail">
+                            <Form.Label>Email</Form.Label>
                             <Form.Control 
                                 type="email" 
-                                placeholder="Ingresa tu correo electrónico"
+                                placeholder="Ingresa tu email"
                                 value={registerData.email}
                                 onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                             />
                         </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formRegisterName">
+                        <Form.Group className="mb-3" controlId="formName">
                             <Form.Label>Nombre</Form.Label>
                             <Form.Control 
                                 type="text" 
@@ -299,7 +302,7 @@ function Header() {
                             />
                         </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formRegisterLastname">
+                        <Form.Group className="mb-3" controlId="formLastname">
                             <Form.Label>Apellido</Form.Label>
                             <Form.Control 
                                 type="text" 
@@ -309,7 +312,7 @@ function Header() {
                             />
                         </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formRegisterBirthdate">
+                        <Form.Group className="mb-3" controlId="formBirthdate">
                             <Form.Label>Fecha de nacimiento</Form.Label>
                             <Form.Control 
                                 type="date" 
@@ -319,7 +322,7 @@ function Header() {
                             />
                         </Form.Group>
 
-                        <Form.Group className="mb-3" controlId="formRegisterGender">
+                        <Form.Group className="mb-3" controlId="formGender">
                             <Form.Label>Género</Form.Label>
                             <Form.Control 
                                 type="text" 
@@ -343,22 +346,22 @@ function Header() {
             {/* Change Password Modal */}
             <Modal show={showChangePasswordModal} onHide={() => { setShowChangePasswordModal(false); setTempPassword(''); setNewPassword(''); }}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Actualizar contraseña</Modal.Title>
+                    <Modal.Title>Cambiar Contraseña</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group className="mb-3" controlId="formTempPassword">
-                            <Form.Label>Contraseña temporal</Form.Label>
+                            <Form.Label>Contraseña Temporal</Form.Label>
                             <Form.Control 
                                 type="password" 
-                                placeholder="Ingresa la contraseña temporal"
+                                placeholder="Ingresa tu contraseña temporal"
                                 value={tempPassword}
                                 onChange={(e) => setTempPassword(e.target.value)}
                             />
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formNewPassword">
-                            <Form.Label>Contraseña nueva</Form.Label>
+                            <Form.Label>Contraseña Nueva</Form.Label>
                             <Form.Control 
                                 type="password" 
                                 placeholder="Ingresa tu nueva contraseña"
@@ -373,7 +376,7 @@ function Header() {
                         Cancelar
                     </Button>
                     <Button variant="primary" onClick={handleChangePassword}>
-                        Actualizar contraseña
+                        Cambiar Contraseña
                     </Button>
                 </Modal.Footer>
             </Modal>
