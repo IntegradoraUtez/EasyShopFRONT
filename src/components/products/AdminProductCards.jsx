@@ -13,6 +13,22 @@ export default function ProductsCard() {
     const { user } = useAuth();
     const [showEditImageModal, setShowEditImageModal] = useState(false);
     const [selectedImageProduct, setSelectedImageProduct] = useState(null);
+    const showLoading = () => {
+        Swal.fire({
+            title: 'Cargando...',
+            text: 'Por favor espera',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    };
+    
+    const closeLoading = () => {
+        Swal.close();
+    };
+
+
 
     const handleEditImageShow = (product) => {
         setSelectedImageProduct(product);
@@ -26,6 +42,8 @@ export default function ProductsCard() {
             console.error('No se ha seleccionado una imagen o producto.');
             return;
         }
+    
+        showLoading();
     
         try {
             const response = await axios.post(
@@ -43,6 +61,8 @@ export default function ProductsCard() {
                 }
             );
     
+            closeLoading();
+    
             Swal.fire({
                 icon: 'success',
                 title: 'Imagen del producto actualizada con éxito',
@@ -52,6 +72,7 @@ export default function ProductsCard() {
     
             handleEditImageClose();
         } catch (error) {
+            closeLoading();
             console.error('Error al subir la imagen:', error);
             if (error.response) {
                 console.error('Datos de error:', error.response.data);
@@ -64,6 +85,7 @@ export default function ProductsCard() {
             });
         }
     };
+    
     
 
     useEffect(() => {
@@ -133,9 +155,13 @@ export default function ProductsCard() {
     };
 
     const handleAddProduct = async () => {
+        showLoading();
+    
         try {
             await insertProduct(newProduct);
             setProducts([...products, newProduct]);
+    
+            closeLoading();
     
             Swal.fire({
                 icon: 'success',
@@ -146,6 +172,7 @@ export default function ProductsCard() {
     
             handleAddClose();
         } catch (error) {
+            closeLoading();
             console.error('Error al agregar el producto:', error);
     
             Swal.fire({
@@ -156,18 +183,38 @@ export default function ProductsCard() {
         }
     };
     
-
+    
     const handleEditProduct = async () => {
+        showLoading();
+    
         try {
             await updateProduct(selectedProduct.id, newProduct);
             setProducts(products.map(product =>
                 product.id === selectedProduct.id ? { ...product, ...newProduct } : product
             ));
+    
+            closeLoading();
+    
+            Swal.fire({
+                icon: 'success',
+                title: 'Producto actualizado con éxito',
+                showConfirmButton: false,
+                timer: 1500
+            });
+    
             handleEditClose();
         } catch (error) {
+            closeLoading();
             console.error('Error al actualizar el producto:', error);
+    
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al actualizar el producto',
+                text: 'Ocurrió un error al actualizar el producto. Inténtalo de nuevo.'
+            });
         }
     };
+    
 
     const updateProduct = async (productId, productData) => {
         try {
@@ -218,6 +265,8 @@ export default function ProductsCard() {
 
 
     const toggleProductActive = async (productId) => {
+        showLoading();
+    
         try {
             const response = await axios.patch(
                 `https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/toggle_product_active/${productId}`,
@@ -229,20 +278,38 @@ export default function ProductsCard() {
                     }
                 }
             );
-            console.log('Estado del producto actualizado con éxito:', response.data);
+    
+            closeLoading();
+    
+            Swal.fire({
+                icon: 'success',
+                title: 'Estado del producto actualizado con éxito',
+                showConfirmButton: false,
+                timer: 1500
+            });
+    
             setProducts(products.map(product =>
                 product.id === productId ? { ...product, active: !product.active } : product
             ));
-
+    
         } catch (error) {
+            closeLoading();
             console.error('Error al cambiar el estado del producto:', error);
             if (error.response) {
                 console.error('Datos de error:', error.response.data);
                 console.error('Estado del error:', error.response.status);
             }
+    
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al cambiar el estado del producto',
+                text: 'Ocurrió un error al cambiar el estado del producto. Inténtalo de nuevo.'
+            });
+    
             throw error;
         }
     };
+    
 
     const sortProducts = (criteria) => {
         let sortedProducts;
@@ -362,7 +429,7 @@ export default function ProductsCard() {
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
                                     <Card.Text><strong>Categoría:</strong> {product.category}</Card.Text>
                                     <div className="d-flex justify-content-between mt-2">
-                                        <Button variant="secondary" size="sm" onClick={() => handleEditShow(product)}>Editar</Button>
+                                        <Button variant="primary" size="sm" onClick={() => handleEditShow(product)}>Editar</Button>
                                         <Button
                                             variant={product.active ? "danger" : "success"}
                                             size="sm"
