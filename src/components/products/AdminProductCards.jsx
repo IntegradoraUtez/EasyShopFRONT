@@ -5,6 +5,8 @@ import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
 
 export default function ProductsCard() {
     const navigate = useNavigate();
@@ -24,12 +26,8 @@ export default function ProductsCard() {
             console.error('No se ha seleccionado una imagen o producto.');
             return;
         }
-        console.log("aqui esta", selectedImageProduct.id);
-        console.log("y.....", newProduct);
-        
+    
         try {
-
-
             const response = await axios.post(
                 'https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/upload_product_image',
                 {
@@ -44,8 +42,14 @@ export default function ProductsCard() {
                     }
                 }
             );
-
-            console.log('Imagen del producto actualizada con éxito:', response.data);
+    
+            Swal.fire({
+                icon: 'success',
+                title: 'Imagen del producto actualizada con éxito',
+                showConfirmButton: false,
+                timer: 1500
+            });
+    
             handleEditImageClose();
         } catch (error) {
             console.error('Error al subir la imagen:', error);
@@ -53,9 +57,14 @@ export default function ProductsCard() {
                 console.error('Datos de error:', error.response.data);
                 console.error('Estado del error:', error.response.status);
             }
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al subir la imagen',
+                text: 'Ocurrió un error al subir la imagen. Inténtalo de nuevo.'
+            });
         }
     };
-
+    
 
     useEffect(() => {
         if (!user || user.user.type !== 'admin') {
@@ -127,11 +136,26 @@ export default function ProductsCard() {
         try {
             await insertProduct(newProduct);
             setProducts([...products, newProduct]);
+    
+            Swal.fire({
+                icon: 'success',
+                title: 'Producto agregado con éxito',
+                showConfirmButton: false,
+                timer: 1500
+            });
+    
             handleAddClose();
         } catch (error) {
-            console.error('Error al agregar handle el producto: ', error);
+            console.error('Error al agregar el producto:', error);
+    
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al agregar el producto',
+                text: 'Ocurrió un error al agregar el producto. Inténtalo de nuevo.'
+            });
         }
     };
+    
 
     const handleEditProduct = async () => {
         try {
