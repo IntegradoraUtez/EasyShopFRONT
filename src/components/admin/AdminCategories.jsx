@@ -16,7 +16,7 @@ function SingleCard({ id, name, active, onModify, onToggleActive, onAddImage, im
                 <Card.Body>
                     <Card.Title className="responsive-text-card">{name}</Card.Title>
 
-                    {images.length > 0 && (
+                    {images.length > 0 ? (
                         <Carousel>
                             {images.map((image, index) => (
                                 <Carousel.Item key={index}>
@@ -28,6 +28,10 @@ function SingleCard({ id, name, active, onModify, onToggleActive, onAddImage, im
                                 </Carousel.Item>
                             ))}
                         </Carousel>
+                    ) : (
+                        <div className="text-center">
+                            <p>No hay imágenes disponibles para esta categoría.</p>
+                        </div>
                     )}
 
                     <div className="d-flex flex-column mt-2">
@@ -101,6 +105,7 @@ export default function AdminCategories() {
         }
 
         try {
+            console.log("new", newCategoryImageType, "id", categoryId)
             const response = await axios.post(
                 'https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/upload_category_image',
                 {
@@ -157,10 +162,16 @@ export default function AdminCategories() {
 
             return response.data.images || [];
         } catch (error) {
-            console.error(`Error al obtener imágenes de la categoría ${categoryId}:`, error);
-            return [];
+            if (error.response && error.response.status === 404) {
+                console.warn(`No se encontraron imágenes para la categoría ${categoryId}.`);
+                return [];
+            } else {
+                console.error(`Error al obtener imágenes de la categoría ${categoryId}:`, error);
+                return [];
+            }
         }
     };
+
 
 
 
@@ -220,6 +231,7 @@ export default function AdminCategories() {
             console.error('Error al obtener las categorías:', error);
         }
     };
+
 
 
     const insertCategory = async (categoryData) => {
