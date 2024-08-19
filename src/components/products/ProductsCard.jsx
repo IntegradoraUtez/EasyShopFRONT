@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
-import './ProductsCard.css'; // Asegúrate de tener un archivo CSS para los estilos adicionales
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getCartItems, saveCartItems } from '../../context/CartUtils';
+import './ProductsCard.css'
 
 export default function ProductsCard() {
     const navigate = useNavigate();
-
-    const handleProcessCarBuy = () => {
-        navigate('/car')
-    }
     const [products, setProducts] = useState([]);
+    const [cartItems, setCartItems] = useState([]);
     const [show, setShow] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -19,6 +17,12 @@ export default function ProductsCard() {
     const handleShow = (product) => {
         setSelectedProduct(product);
         setShow(true);
+    };
+
+    const handleAddToCart = (product) => {
+        const newCartItems = [...cartItems, product];
+        setCartItems(newCartItems);
+        saveCartItems(newCartItems);
     };
 
     const sortProducts = (criteria) => {
@@ -42,12 +46,10 @@ export default function ProductsCard() {
         setProducts(sortedProducts);
     };
 
-
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get('https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/get_products');
-                console.log(response.data);
                 if (response.data && Array.isArray(response.data.products)) {
                     setProducts(response.data.products);
                 } else {
@@ -57,27 +59,16 @@ export default function ProductsCard() {
                 console.error("Error fetching products", err);
             }
         };
-       
-        const fetchCategories = async() => {
-                    try {
-                const response = await axios.get('');
-                console.log(response.data);
-                if (response.data && Array.isArray(response.data.products)) {
-                    setProducts(response.data.products);
-                } else {
-                    console.error("Formato de datos inesperado:", response.data);
-                }
-            } catch (error) {
-                
-            }
-        }
-    
+
         fetchProducts();
+    }, []);
+
+    useEffect(() => {
+        setCartItems(getCartItems());
     }, []);
 
     return (
         <>
-            {/* Carrusel */}
             <div className="carousel-container">
                 <Carousel className="custom-carousel">
                     <Carousel.Item>
@@ -91,7 +82,6 @@ export default function ProductsCard() {
                             <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
                         </Carousel.Caption>
                     </Carousel.Item>
-                    {/* Agrega más items del carrusel si es necesario */}
                 </Carousel>
             </div>
 
@@ -121,13 +111,18 @@ export default function ProductsCard() {
                     {products.map((product, index) => (
                         <Col key={index} md={3} className="mb-4">
                             <Card onClick={() => handleShow(product)}>
-                                <Card.Img variant="top" src={product.image} />
+                                <Card.Img variant="top" src={product.image} className="product" />
                                 <Card.Body>
                                     <Card.Title>{product.name}</Card.Title>
                                     <Card.Text><strong>Precio:</strong> ${product.price}</Card.Text>
                                     <Card.Text><strong>Categoría:</strong> {product.category}</Card.Text>
                                     <div className="d-flex justify-content-center">
-                                        <Button variant="primary" onClick={handleProcessCarBuy}>Agregar al carrito</Button>
+                                        <Button variant="primary" onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddToCart(product);
+                                        }}>
+                                            Agregar al carrito
+                                        </Button>
                                     </div>
                                 </Card.Body>
                             </Card>
@@ -152,7 +147,10 @@ export default function ProductsCard() {
                     <Button variant="secondary" onClick={handleClose}>
                         Cerrar
                     </Button>
-                    <Button variant="primary" onClick={handleProcessCarBuy}>
+                    <Button variant="primary" onClick={() => {
+                        handleAddToCart(selectedProduct);
+                        handleClose();
+                    }}>
                         Agregar al carrito de compra
                     </Button>
                 </Modal.Footer>
