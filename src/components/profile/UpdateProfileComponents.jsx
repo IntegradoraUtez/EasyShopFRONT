@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import Swal from 'sweetalert2';
 
 export const UpdateProfileComponents = () => {
   const [id, setId] = useState('');
@@ -12,10 +13,9 @@ export const UpdateProfileComponents = () => {
 
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    // Función para obtener el usuario del localStorage
     const loadUserFromLocalStorage = () => {
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -34,12 +34,12 @@ export const UpdateProfileComponents = () => {
   const validate = () => {
     const errors = {};
 
-    if (!name.trim()) {
-      errors.name = 'El nombre es requerido';
+    if (!name.trim() || name.length > 30) {
+      errors.name = 'El nombre es requerido y no puede exceder los 30 caracteres';
     }
 
-    if (!lastname.trim()) {
-      errors.lastname = 'El apellido es requerido';
+    if (!lastname.trim() || lastname.length > 30) {
+      errors.lastname = 'El apellido es requerido y no puede exceder los 30 caracteres';
     }
 
     if (new Date(birthdate) > new Date()) {
@@ -77,9 +77,8 @@ export const UpdateProfileComponents = () => {
             },
           }
         );
-        console.log('Perfil actualizado:', response.data);
-        
-        // Actualiza el localStorage con los nuevos datos
+
+
         const updatedUser = {
           ...JSON.parse(localStorage.getItem('user')).user,
           name,
@@ -89,11 +88,54 @@ export const UpdateProfileComponents = () => {
         };
         localStorage.setItem('user', JSON.stringify({ user: updatedUser }));
 
-        // Redirige a la página de perfil
-        navigate('/profile');
+        // Mostrar SweetAlert de confirmación para cerrar sesión
+        Swal.fire({
+          title: 'Confirmación',
+          text: 'Se cerrara la sesión después de actualizar su perfil!!!!',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Continuar',
+          cancelButtonText: 'Cancelar',
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              await logout();
+              localStorage.clear();
+              Swal.fire({
+                title: 'Éxito!',
+                text: 'Perfil actualizado y sesión cerrada correctamente.',
+                icon: 'success',
+                confirmButtonText: 'OK',
+              }).then(() => {
+                navigate('/');
+              });
+            } catch (error) {
+              Swal.fire({
+                title: 'Error!',
+                text: 'Hubo un problema al cerrar sesión.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+              });
+            }
+          } else {
+            Swal.fire({
+              title: 'Éxito!',
+              text: 'Perfil actualizado correctamente.',
+              icon: 'success',
+              confirmButtonText: 'OK',
+            }).then(() => {
+              navigate('/profile');
+            });
+          }
+        });
       } catch (error) {
         console.error('Error actualizando el perfil:', error);
-        // Manejar el error aquí
+        Swal.fire({
+          title: 'Error!',
+          text: 'Hubo un problema al actualizar el perfil.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     }
   };
@@ -116,6 +158,7 @@ export const UpdateProfileComponents = () => {
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
                 required 
+                maxLength="30"
               />
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
@@ -129,6 +172,7 @@ export const UpdateProfileComponents = () => {
                 value={lastname} 
                 onChange={(e) => setLastname(e.target.value)} 
                 required 
+                maxLength="30"
               />
               {errors.lastname && <span className="error">{errors.lastname}</span>}
             </div>

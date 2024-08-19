@@ -60,7 +60,6 @@ function Header() {
             });
 
         } catch (error) {
-            console.error('Login error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error al iniciar sesión',
@@ -116,7 +115,6 @@ function Header() {
                 new_password: newPassword
             };
 
-            console.log('Change password data:', passwordData);  // Imprime los datos de cambio de contraseña
 
             await axios.patch('https://ewjkx0lte6.execute-api.us-east-1.amazonaws.com/Prod/update_user_temp_password_patch', passwordData);
             
