@@ -16,7 +16,7 @@ import Footer from "./components/Footer.jsx";
 import ManageAddressesScreen from "./views/ManageAddressesScreen.jsx";
 import ManageCardsScreen from "./views/ManageCardsScreen.jsx";
 import AdminUsersScreen from "./views/AdminUsersScreen.jsx";
-
+import ViewPurchasesUserIdScreen from "./views/ViewPurchasesUserIdScreen.jsx";
 function App() {
   return (
     <BrowserRouter>
@@ -36,6 +36,7 @@ function App() {
         <Route path="/user/manageAddresses" element={<ManageAddressesScreen />} />
         <Route path="/user/manageCards" element={<ManageCardsScreen />} />
         <Route path="/admin/users" element={<AdminUsersScreen />} />
+        <Route path="/user/viewPurchases" element={<ViewPurchasesUserIdScreen />} />
       </Routes>
       <Footer />
     </BrowserRouter>
