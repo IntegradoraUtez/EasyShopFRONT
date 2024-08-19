@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { BsPersonCircle, BsFillCartDashFill } from "react-icons/bs";
 import { Dropdown, Modal, Button, Form } from 'react-bootstrap';
 import Logo from '../../src/assets/easyshop.png';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import Swal from 'sweetalert2';
 
 function Header() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useAuth();
+
+    const { user, login, logout } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
@@ -18,21 +21,56 @@ function Header() {
                 username,
                 password
             });
-            console.log('Login successful:', response.data);
-            setShowLoginModal(false);
 
             const userData = {
                 token: response.data.auth.id_token,
                 user: response.data.user
             };
 
-            // Llamar a la función login del contexto para almacenar los datos del usuario
             login(userData);
 
+            setShowLoginModal(false);
+
+            // Mostrar SweetAlert de confirmación de inicio de sesión
+            Swal.fire({
+                icon: 'success',
+                title: 'Inicio de sesión exitoso',
+                showConfirmButton: false,
+                timer: 1500
+            });
 
         } catch (error) {
             console.error('Login error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al iniciar sesión',
+                text: 'Verifica tus credenciales e inténtalo de nuevo.'
+            });
         }
+    };
+
+    const handleLogout = () => {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Cerrarás tu sesión actual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                logout();
+                navigate('/');  // Redirigir al usuario a la página principal
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sesión cerrada',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        });
     };
 
     return (
@@ -47,9 +85,11 @@ function Header() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/">Inicio</Link>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/admin/dashboard">Admin</Link>
-                            </li>
+                            {user && user.user.type === 'admin' && (
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/admin/dashboard">Admin</Link>
+                                </li>
+                            )}
                         </ul>
                         <Dropdown>
                             <Dropdown.Toggle variant="transparent" id="user-dropdown">
@@ -57,10 +97,16 @@ function Header() {
                             </Dropdown.Toggle>
 
                             <Dropdown.Menu>
-                                <Dropdown.Item onClick={() => setShowLoginModal(true)}>
-                                    Inicio de sesión
-                                </Dropdown.Item>
-                                <Dropdown.Item as={Link} to="/profile">Perfil</Dropdown.Item>
+                                {!user ? (
+                                    <Dropdown.Item onClick={() => setShowLoginModal(true)}>
+                                        Inicio de sesión
+                                    </Dropdown.Item>
+                                ) : (
+                                    <>
+                                        <Dropdown.Item as={Link} to="/profile">Perfil</Dropdown.Item>
+                                        <Dropdown.Item onClick={handleLogout}>Cerrar Sesión</Dropdown.Item>
+                                    </>
+                                )}
                             </Dropdown.Menu>
                         </Dropdown>
                         <button className="btn ms-2">
