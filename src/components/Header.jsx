@@ -4,14 +4,17 @@ import { BsPersonCircle, BsFillCartDashFill } from "react-icons/bs";
 import { Dropdown, Modal, Button, Form } from 'react-bootstrap';
 import Logo from '../../src/assets/easyshop.png';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Header() {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useAuth();
 
+    const { user, login, logout } = useAuth();
+
+    const navigate = useNavigate();
     const handleLogin = async () => {
         try {
             const response = await axios.post('https://ha7f9zowr1.execute-api.us-east-1.amazonaws.com/Prod/login', {
@@ -28,11 +31,14 @@ function Header() {
 
             // Llamar a la función login del contexto para almacenar los datos del usuario
             login(userData);
-
-
         } catch (error) {
             console.error('Login error:', error);
         }
+    };
+
+    const handleLogout = () => {
+        logout();  // Llamar a la función logout del contexto de autenticación
+        navigate('/');  // Redirigir al usuario a la página principal u otra página después del logout
     };
 
     return (
@@ -47,9 +53,11 @@ function Header() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/">Inicio</Link>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/admin/dashboard">Admin</Link>
-                            </li>
+                            {user && user.user.type === 'admin' && (
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/admin/dashboard">Admin</Link>
+                                </li>
+                            )}
                         </ul>
                         <Dropdown>
                             <Dropdown.Toggle variant="transparent" id="user-dropdown">
@@ -57,10 +65,16 @@ function Header() {
                             </Dropdown.Toggle>
 
                             <Dropdown.Menu>
-                                <Dropdown.Item onClick={() => setShowLoginModal(true)}>
-                                    Inicio de sesión
-                                </Dropdown.Item>
-                                <Dropdown.Item as={Link} to="/profile">Perfil</Dropdown.Item>
+                                {!user ? (
+                                    <Dropdown.Item onClick={() => setShowLoginModal(true)}>
+                                        Inicio de sesión
+                                    </Dropdown.Item>
+                                ) : (
+                                    <>
+                                        <Dropdown.Item as={Link} to="/profile">Perfil</Dropdown.Item>
+                                        <Dropdown.Item onClick={handleLogout}>Cerrar Sesión</Dropdown.Item>
+                                    </>
+                                )}
                             </Dropdown.Menu>
                         </Dropdown>
                         <button className="btn ms-2">
@@ -111,6 +125,7 @@ function Header() {
                     <Button variant="primary" onClick={handleLogin}>
                         Iniciar sesión
                     </Button>
+
                 </Modal.Footer>
             </Modal>
         </>
