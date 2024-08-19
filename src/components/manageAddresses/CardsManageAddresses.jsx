@@ -2,6 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { Row, Col, Card, Button, Modal, Form, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import Swal from 'sweetalert2';
 
 function CardsManageAddresses() {
     const { user } = useAuth();
@@ -28,6 +29,21 @@ function CardsManageAddresses() {
         'Content-Type': 'application/json'
     };
 
+    const showLoading = () => {
+        Swal.fire({
+            title: 'Cargando...',
+            text: 'Por favor espera',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    };
+
+    const closeLoading = () => {
+        Swal.close();
+    };
+
     useEffect(() => {
         fetchAddresses();
     }, [idUser, updateTrigger]);
@@ -37,6 +53,7 @@ function CardsManageAddresses() {
         axios.get(`https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/get_addresses_by_Usersid/${idUser}`, { headers: corsHeaders })
             .then(response => {
                 setAddresses(response.data.addresses || []);
+                closeLoading();
             })
             .catch(error => {
                 console.error('Error fetching addresses:', error);
@@ -83,6 +100,14 @@ function CardsManageAddresses() {
             .then(() => {
                 fetchAddresses();
                 setShowModal(false);
+
+                // Mostrar alerta de éxito
+                Swal.fire({
+                    icon: 'success',
+                    title: isEditing ? 'Dirección actualizada con éxito' : 'Dirección agregada con éxito',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             })
             .catch(error => {
                 console.error('Error saving address:', error);
@@ -117,6 +142,7 @@ function CardsManageAddresses() {
     const handleToggleActivation = async () => {
         const id = addresses[addressToToggle].id;
         try {
+            const action = addresses[addressToToggle].active ? 'desactivar' : 'activar';
             await axios.patch(
                 `https://qj6gmqce78.execute-api.us-east-1.amazonaws.com/Prod/toggle_address_active/${id}`,
                 {},
@@ -125,6 +151,14 @@ function CardsManageAddresses() {
             setAddresses(addresses.map((address, i) =>
                 i === addressToToggle ? { ...address, active: !address.active } : address
             ));
+
+            // Mostrar alerta de éxito
+            Swal.fire({
+                icon: 'success',
+                title: `Dirección ${action}da con éxito`,
+                showConfirmButton: false,
+                timer: 1500
+            });
         } catch (error) {
             console.error('Error toggling address activation:', error);
         } finally {
@@ -136,6 +170,11 @@ function CardsManageAddresses() {
     const confirmToggleActivation = (index) => {
         setAddressToToggle(index);
         setShowConfirmationModal(true);
+    };
+
+    const cancelToggleActivation = () => {
+        setShowConfirmationModal(false);
+        setAddressToToggle(null);
     };
 
     if (!user) return <p>Loading...</p>;
@@ -252,105 +291,102 @@ function CardsManageAddresses() {
                             </Fragment>
                         ))
                     )}
+
+                    {/* Modal para agregar o editar dirección */}
+                    <Modal show={showModal} onHide={() => setShowModal(false)}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>{isEditing ? 'Editar Dirección' : 'Agregar Dirección'}</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Form>
+                                <Form.Group controlId="formAddressName">
+                                    <Form.Label>Nombre</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="name"
+                                        value={newAddress.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Nombre"
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formAddressCountry">
+                                    <Form.Label>País</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="country"
+                                        value={newAddress.country}
+                                        onChange={handleInputChange}
+                                        placeholder="País"
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formAddressState">
+                                    <Form.Label>Estado</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="state"
+                                        value={newAddress.state}
+                                        onChange={handleInputChange}
+                                        placeholder="Estado"
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formAddressCity">
+                                    <Form.Label>Ciudad</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="city"
+                                        value={newAddress.city}
+                                        onChange={handleInputChange}
+                                        placeholder="Ciudad"
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formAddressStreet">
+                                    <Form.Label>Calle</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="street"
+                                        value={newAddress.street}
+                                        onChange={handleInputChange}
+                                        placeholder="Calle"
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formAddressPostalCode">
+                                    <Form.Label>Código Postal</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="postal_code"
+                                        value={newAddress.postal_code}
+                                        onChange={handleInputChange}
+                                        placeholder="Código Postal"
+                                    />
+                                </Form.Group>
+                                <Form.Group className="text-center mt-4">
+                                    <Button variant="primary" onClick={handleSaveAddress} disabled={loading}>
+                                        {isEditing ? 'Guardar Cambios' : 'Agregar Dirección'}
+                                    </Button>
+                                </Form.Group>
+                            </Form>
+                        </Modal.Body>
+                    </Modal>
+
+                    {/* Modal de confirmación para desactivar/activar */}
+                    <Modal show={showConfirmationModal} onHide={() => setShowConfirmationModal(false)}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Confirmación</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            ¿Estás seguro de que quieres {addresses[addressToToggle]?.active ? 'desactivar' : 'activar'} esta dirección?
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={cancelToggleActivation}>
+                                Cancelar
+                            </Button>
+                            <Button variant="primary" onClick={handleToggleActivation}>
+                                Confirmar
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </>
             )}
-
-            {/* Modal para agregar o editar dirección */}
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{isEditing ? 'Editar Dirección' : 'Agregar Dirección'}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group controlId="formName">
-                            <Form.Label>Nombre</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                name="name" 
-                                value={newAddress.name} 
-                                onChange={handleInputChange} 
-                                placeholder="Ingrese el nombre"
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formCountry">
-                            <Form.Label>País</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                name="country" 
-                                value={newAddress.country} 
-                                onChange={handleInputChange} 
-                                placeholder="Ingrese el país"
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formState">
-                            <Form.Label>Estado</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                name="state" 
-                                value={newAddress.state} 
-                                onChange={handleInputChange} 
-                                placeholder="Ingrese el estado"
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formCity">
-                            <Form.Label>Ciudad</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                name="city" 
-                                value={newAddress.city} 
-                                onChange={handleInputChange} 
-                                placeholder="Ingrese la ciudad"
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formStreet">
-                            <Form.Label>Calle</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                name="street" 
-                                value={newAddress.street} 
-                                onChange={handleInputChange} 
-                                placeholder="Ingrese la calle"
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formPostalCode">
-                            <Form.Label>Código Postal</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                name="postal_code" 
-                                value={newAddress.postal_code} 
-                                onChange={handleInputChange} 
-                                placeholder="Ingrese el código postal"
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>
-                        Cerrar
-                    </Button>
-                    <Button variant="primary" onClick={handleSaveAddress} disabled={loading}>
-                        {loading ? <Spinner animation="border" size="sm" /> : 'Guardar'}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal de confirmación para activar/desactivar dirección */}
-            <Modal show={showConfirmationModal} onHide={() => setShowConfirmationModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Está seguro de que desea {addresses[addressToToggle]?.active ? 'desactivar' : 'activar'} esta dirección?
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowConfirmationModal(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="primary" onClick={handleToggleActivation}>
-                        Confirmar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </>
     );
 }
