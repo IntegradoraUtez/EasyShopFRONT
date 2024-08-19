@@ -1,56 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Carousel, Col, Row, Button, Dropdown, Form, Modal } from 'react-bootstrap';
+import { Card, Col, Row, Button, Dropdown, Form, Modal } from 'react-bootstrap';
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
-import '../landing/styleHomeScreen.css'; // Asegúrate de ajustar la ruta al archivo de estilos según tu estructura de proyecto
+import '../landing/styleHomeScreen.css';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
-
-
-function SingleCardWithCarousel({ categoria, images, onModify, onDeactivate }) {
+function SingleCard({ name, onModify, onDeactivate }) {
     return (
         <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center mb-3 mb-md-0">
             <Card className="product-card mt-3">
-                <Carousel interval={2000}>
-                    {images.map((image, index) => (
-                        <Carousel.Item key={index}>
-                            <img
-                                className="d-block w-100"
-                                src={image}
-                                alt={`Slide ${index + 1}`}
-                            />
-                        </Carousel.Item>
-                    ))}
-                </Carousel>
-                <Card.ImgOverlay className="card-overlay">
-                    <Col className="textCard">
-                        <Card.Title className="responsive-text-card">{categoria}</Card.Title>
-                        <div className="d-flex flex-column mt-2">
-                            <Button variant="secondary" size="sm" className="mb-2" onClick={onModify}>Modificar</Button>
-                            <Button variant="danger" size="sm" onClick={onDeactivate}>Desactivar</Button>
-                        </div>
-                    </Col>
-                </Card.ImgOverlay>
+                <Card.Body>
+                    <Card.Title className="responsive-text-card">{name}</Card.Title>
+                    <div className="d-flex flex-column mt-2">
+                        <Button variant="secondary" size="sm" className="mb-2" onClick={onModify}>Modificar</Button>
+                        <Button variant="danger" size="sm" onClick={onDeactivate}>Desactivar</Button>
+                    </div>
+                </Card.Body>
             </Card>
         </Col>
     );
 }
 
 export default function AdminCategories() {
-    const {user} = useAuth();
-    const navigate = useNavigate;
-    
-    useEffect(() => {
-        if (!user || user.user.type !== 'admin') {
-            navigate('/'); 
-        } else {
-            console.log('Tipo:', user.user.type);
-            console.log('Token:', user.token);
-        }
-
-    }, [user, navigate]);
-
-
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [showActive, setShowActive] = useState(true);
@@ -58,72 +33,79 @@ export default function AdminCategories() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showConfirmDeactivateModal, setShowConfirmDeactivateModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
-    const [newCategory, setNewCategory] = useState({ categoria: '', images: ['', '', ''] });
-    const [editCategory, setEditCategory] = useState({ id: null, categoria: '', images: ['', '', ''] });
+    const [cardsData, setCardsData] = useState([]);
+    const [newCategory, setNewCategory] = useState({});
+    const [editCategory, setEditCategory] = useState({ id: null, name: '' });
 
-
-    const cardsData = [
-        {
-            categoria: 'Jeans',
-            images: [
-                'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
-                'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
-                'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg'
-            ],
-            active: true
-        },
-        {
-            categoria: 'Jackets',
-            images: [
-                'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
-                'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
-                'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg'
-            ],
-            active: true
-        },
-        {
-            categoria: 'Pans',
-            images: [
-                'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
-                'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
-                'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg'
-            ],
-            active: true
-        },
-        {
-            categoria: 'Blusas',
-            images: [
-                'https://images.ecestaticos.com/j8exM3G00FKxNOsdok9_oL99m8Q=/0x0:2119x1415/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F21c%2F586%2F696%2F21c5866968158e56bf258a48a5e3053b.jpg',
-                'https://png.pngtree.com/thumb_back/fw800/background/20220817/pngtree-stylish-woman-shops-for-clothes-with-credit-card-happy-and-smiling-photo-image_48164174.jpg',
-                'https://uploads-ssl.webflow.com/626c39fe1ac567f4c6aacbfe/629544f029afea99b3d7204e_628eaf05aeaf96563e150330_aumentar-ventas-en-tu-tienda-de-ropa.jpeg'
-            ],
-            active: true
+    useEffect(() => {
+        if (!user || user.user.type !== 'admin') {
+            navigate('/');
+        } else {
+            fetchCategories();
         }
-    ];
+    }, [user, navigate]);
 
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get('https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/get_categories', {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data && Array.isArray(response.data.categories)) {
+                setCardsData(response.data.categories);
+            } else {
+                console.error("Formato de datos inesperado:", response.data);
+            }
+        } catch (error) {
+            console.error('Error al obtener las categorías:', error);
+        }
     };
 
-    const handleFilterChange = (showActive) => {
-        setShowActive(showActive);
+    const insertCategory = async (categoryData) => {
+        try {
+            await axios.post(
+                'https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/insert_category',
+                categoryData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            await fetchCategories(); // Refrescar la lista de categorías después de agregar una nueva
+            setShowAddModal(false);
+            Swal.fire({
+                icon: 'success',
+                title: 'Categoría agregada con éxito',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al agregar la categoría',
+                text: 'Ocurrió un error al agregar la categoría. Inténtalo de nuevo.'
+            });
+        }
     };
 
-    const handleAddCategory = () => {
-        // Lógica para agregar la categoría
-        console.log('Agregar categoría', newCategory);
-        setShowAddModal(false);
+    const handleSearchChange = (e) => setSearchTerm(e.target.value);
+
+    const handleFilterChange = (showActive) => setShowActive(showActive);
+
+    const handleAddCategory = async () => {
+        await insertCategory(newCategory);
     };
 
     const handleEditCategory = () => {
-        // Lógica para editar la categoría
-        console.log('Editar categoría', editCategory);
         setShowEditModal(false);
     };
 
     const handleDeactivateCategory = () => {
-        // Lógica para desactivar la categoría
-        console.log('Desactivar categoría', selectedCategory);
         setShowConfirmDeactivateModal(false);
     };
 
@@ -138,8 +120,8 @@ export default function AdminCategories() {
     };
 
     const filteredCardsData = cardsData.filter(card => {
-        const matchesSearch = card.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = showActive ? card.active : !card.active;
+        const matchesSearch = card.name && card.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = showActive ? card.active === 1 : card.active !== 1;
         return matchesSearch && matchesFilter;
     });
 
@@ -175,16 +157,15 @@ export default function AdminCategories() {
 
             <Row className="align-items-center justify-content-center mb-4 mt-2">
                 {filteredCardsData.map((card, index) => (
-                    <SingleCardWithCarousel
+                    <SingleCard
                         key={index}
-                        categoria={card.categoria}
-                        images={card.images}
+                        name={card.name} 
                         onModify={() => {
                             setEditCategory(card);
                             setShowEditModal(true);
                         }}
                         onDeactivate={() => {
-                            setSelectedCategory(card.categoria);
+                            setSelectedCategory(card.name);
                             setShowConfirmDeactivateModal(true);
                         }}
                     />
@@ -209,22 +190,6 @@ export default function AdminCategories() {
                                 maxLength={20}
                             />
                         </Form.Group>
-                        {newCategory.images.map((image, index) => (
-                            <Form.Group controlId={`formCategoryImage${index}`} key={index}>
-                                <Form.Label>URL de la Imagen {index + 1}</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder={`URL de la Imagen ${index + 1}`}
-                                    name={`image${index}`}
-                                    value={image}
-                                    onChange={(e) => {
-                                        const images = [...newCategory.images];
-                                        images[index] = e.target.value;
-                                        setNewCategory({ ...newCategory, images });
-                                    }}
-                                />
-                            </Form.Group>
-                        ))}
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -250,27 +215,11 @@ export default function AdminCategories() {
                                 type="text"
                                 placeholder="Nombre de la Categoría"
                                 name="name"
-                                value={editCategory.categoria}
+                                value={editCategory.name}
                                 onChange={handleEditInputChange}
                                 maxLength={20}
                             />
                         </Form.Group>
-                        {editCategory.images.map((image, index) => (
-                            <Form.Group controlId={`formEditCategoryImage${index}`} key={index}>
-                                <Form.Label>URL de la Imagen {index + 1}</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder={`URL de la Imagen ${index + 1}`}
-                                    name={`image${index}`}
-                                    value={image}
-                                    onChange={(e) => {
-                                        const images = [...editCategory.images];
-                                        images[index] = e.target.value;
-                                        setEditCategory({ ...editCategory, images });
-                                    }}
-                                />
-                            </Form.Group>
-                        ))}
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
