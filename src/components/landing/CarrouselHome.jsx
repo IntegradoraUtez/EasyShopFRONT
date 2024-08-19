@@ -1,47 +1,33 @@
-import React from 'react'
+import React from 'react';
 import { Carousel } from 'react-bootstrap';
-import './styleHomeScreen.css'
+import './styleHomeScreen.css';
 
 function CarrouselHome() {
+    const images = [
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/2_5.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/1_3.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/4_13.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/5_7.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/5_14.jpeg"
+    ];
+
     return (
-        <>
-            <Carousel className="custom-carousel">
-                <Carousel.Item>
+        <Carousel className="custom-carousel">
+            {images.map((image, index) => (
+                <Carousel.Item key={index}>
                     <img
                         className="d-block w-100"
-                        src="https://via.placeholder.com/800x400"
-                        alt="First slide"
+                        src={image}
+                        alt={`Slide ${index + 1}`}
                     />
                     <Carousel.Caption>
-                        <h3>First slide label</h3>
-                        <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
+                        <h3>{`Categoría ${index + 1}`}</h3>
+                        <p>{`Esta es la imagen ${index + 1} de la categoría.`}</p>
                     </Carousel.Caption>
                 </Carousel.Item>
-                <Carousel.Item>
-                    <img
-                        className="d-block w-100"
-                        src="https://via.placeholder.com/800x400"
-                        alt="Second slide"
-                    />
-                    <Carousel.Caption>
-                        <h3>Second slide label</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    </Carousel.Caption>
-                </Carousel.Item>
-                <Carousel.Item>
-                    <img
-                        className="d-block w-100"
-                        src="https://via.placeholder.com/800x400"
-                        alt="Third slide"
-                    />
-                    <Carousel.Caption>
-                        <h3>Third slide label</h3>
-                        <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
-                    </Carousel.Caption>
-                </Carousel.Item>
-            </Carousel>
-        </>
-    )
+            ))}
+        </Carousel>
+    );
 }
 
-export default CarrouselHome
+export default CarrouselHome;
