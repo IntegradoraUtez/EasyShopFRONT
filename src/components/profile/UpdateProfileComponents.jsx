@@ -1,47 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
 export const UpdateProfileComponents = () => {
-  const [username, setUsername] = useState('Nombre de Usuario');
-  const [email, setEmail] = useState('usuario@ejemplo.com');
-  const [birthdate, setBirthdate] = useState('1990-01-01');
-  const [gender, setGender] = useState('Masculino');
-  const [userType, setUserType] = useState('Administrador');
-  const [fullName, setFullName] = useState('Juan Pérez');
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [birthdate, setBirthdate] = useState('');
+  const [gender, setGender] = useState('');
 
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Función para obtener el usuario del localStorage
+    const loadUserFromLocalStorage = () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        setId(parsedUser.user.id || '');
+        setName(parsedUser.user.name || '');
+        setLastname(parsedUser.user.lastname || '');
+        setBirthdate(parsedUser.user.birthdate || '');
+        setGender(parsedUser.user.gender || '');
+      }
+    };
+
+    loadUserFromLocalStorage();
+  }, []);
 
   const validate = () => {
     const errors = {};
 
-    const specialCharPattern = /[^a-zA-Z0-9\s]/;
-
-    if (username.trim().length < 3) {
-      errors.username = 'El nombre de usuario debe tener al menos 3 caracteres';
-    } else if (specialCharPattern.test(username)) {
-      errors.username = 'El nombre de usuario no debe contener caracteres especiales';
+    if (!name.trim()) {
+      errors.name = 'El nombre es requerido';
     }
 
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      errors.email = 'El correo no es válido';
+    if (!lastname.trim()) {
+      errors.lastname = 'El apellido es requerido';
     }
 
     if (new Date(birthdate) > new Date()) {
       errors.birthdate = 'La fecha de nacimiento no puede ser en el futuro';
     }
 
-    if (fullName.trim().length < 3) {
-      errors.fullName = 'El nombre completo debe tener al menos 3 caracteres';
-    } else if (specialCharPattern.test(fullName)) {
-      errors.fullName = 'El nombre completo no debe contener caracteres especiales';
+    if (!['Masculino', 'Femenino', 'Otro'].includes(gender)) {
+      errors.gender = 'El género es requerido';
     }
 
     return errors;
   };
 
-  const handleUpdate = (event) => {
+  const handleUpdate = async (event) => {
     event.preventDefault();
     const validationErrors = validate();
 
@@ -49,15 +61,40 @@ export const UpdateProfileComponents = () => {
       setErrors(validationErrors);
     } else {
       setErrors({});
-      // Aquí puedes manejar la lógica de actualización
-      console.log({
-        username,
-        email,
-        birthdate,
-        gender,
-        userType,
-        fullName,
-      });
+      try {
+        const response = await axios.patch(
+          'https://ewjkx0lte6.execute-api.us-east-1.amazonaws.com/Prod/update_user_data_patch',
+          {
+            id,
+            name,
+            lastname,
+            birthdate,
+            gender,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
+        console.log('Perfil actualizado:', response.data);
+        
+        // Actualiza el localStorage con los nuevos datos
+        const updatedUser = {
+          ...JSON.parse(localStorage.getItem('user')).user,
+          name,
+          lastname,
+          birthdate,
+          gender,
+        };
+        localStorage.setItem('user', JSON.stringify({ user: updatedUser }));
+
+        // Redirige a la página de perfil
+        navigate('/profile');
+      } catch (error) {
+        console.error('Error actualizando el perfil:', error);
+        // Manejar el error aquí
+      }
     }
   };
 
@@ -71,27 +108,29 @@ export const UpdateProfileComponents = () => {
         <h2>Actualizar Perfil</h2>
         <form onSubmit={handleUpdate}>
           <div className="row form-group">
-            <div className="col-12 col-md-6">
-              <label htmlFor="username">Nombre de Usuario</label>
+            <div className="col-12">
+              <label htmlFor="name">Nombre</label>
               <input 
                 type="text" 
-                id="username" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
+                id="name" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
                 required 
               />
-              {errors.username && <span className="error">{errors.username}</span>}
+              {errors.name && <span className="error">{errors.name}</span>}
             </div>
-            <div className="col-12 col-md-6">
-              <label htmlFor="email">Correo</label>
+          </div>
+          <div className="row form-group">
+            <div className="col-12">
+              <label htmlFor="lastname">Apellido</label>
               <input 
-                type="email" 
-                id="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+                type="text" 
+                id="lastname" 
+                value={lastname} 
+                onChange={(e) => setLastname(e.target.value)} 
                 required 
               />
-              {errors.email && <span className="error">{errors.email}</span>}
+              {errors.lastname && <span className="error">{errors.lastname}</span>}
             </div>
           </div>
           <div className="row form-group">
@@ -114,23 +153,12 @@ export const UpdateProfileComponents = () => {
                 onChange={(e) => setGender(e.target.value)} 
                 required
               >
+                <option value="">Seleccionar</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
                 <option value="Otro">Otro</option>
               </select>
-            </div>
-          </div>
-          <div className="row form-group">
-            <div className="col-12">
-              <label htmlFor="fullName">Nombre Completo</label>
-              <input 
-                type="text" 
-                id="fullName" 
-                value={fullName} 
-                onChange={(e) => setFullName(e.target.value)} 
-                required 
-              />
-              {errors.fullName && <span className="error">{errors.fullName}</span>}
+              {errors.gender && <span className="error">{errors.gender}</span>}
             </div>
           </div>
           <div className="form-group button-group">
