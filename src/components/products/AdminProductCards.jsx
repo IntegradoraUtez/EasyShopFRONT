@@ -9,6 +9,53 @@ import axios from 'axios';
 export default function ProductsCard() {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [showEditImageModal, setShowEditImageModal] = useState(false);
+    const [selectedImageProduct, setSelectedImageProduct] = useState(null);
+
+    const handleEditImageShow = (product) => {
+        setSelectedImageProduct(product);
+        setShowEditImageModal(true);
+    };
+
+    const handleEditImageClose = () => setShowEditImageModal(false);
+
+    const handleUploadImage = async () => {
+        if (!selectedImageProduct || !newProduct.image_data || !newProduct.image_type) {
+            console.error('No se ha seleccionado una imagen o producto.');
+            return;
+        }
+        console.log("aqui esta", selectedImageProduct.id);
+        console.log("y.....", newProduct);
+        
+        try {
+
+
+            const response = await axios.post(
+                'https://hr0jacwzd1.execute-api.us-east-1.amazonaws.com/Prod/upload_product_image',
+                {
+                    image_data: newProduct.image_data, 
+                    image_name_id: selectedImageProduct.id,  
+                    image_type: newProduct.image_type,       
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log('Imagen del producto actualizada con éxito:', response.data);
+            handleEditImageClose();
+        } catch (error) {
+            console.error('Error al subir la imagen:', error);
+            if (error.response) {
+                console.error('Datos de error:', error.response.data);
+                console.error('Estado del error:', error.response.status);
+            }
+        }
+    };
+
 
     useEffect(() => {
         if (!user || user.user.type !== 'admin') {
@@ -145,13 +192,6 @@ export default function ProductsCard() {
         setNewProduct({ ...newProduct, [name]: value.slice(0, maxLength) });
     };
 
-    const handleDeactivateProduct = async (product) => {
-        try {
-            await toggleProductActive(product.id);
-        } catch (error) {
-            console.error('Error al desactivar el producto:', error);
-        }
-    };
 
     const toggleProductActive = async (productId) => {
         try {
@@ -169,7 +209,7 @@ export default function ProductsCard() {
             setProducts(products.map(product =>
                 product.id === productId ? { ...product, active: !product.active } : product
             ));
-            
+
         } catch (error) {
             console.error('Error al cambiar el estado del producto:', error);
             if (error.response) {
@@ -179,7 +219,6 @@ export default function ProductsCard() {
             throw error;
         }
     };
-
 
     const sortProducts = (criteria) => {
         let sortedProducts;
@@ -305,7 +344,9 @@ export default function ProductsCard() {
                                             size="sm"
                                             onClick={() => toggleProductActive(product.id)}>
                                             {product.active ? "Desactivar" : "Activar"}
-                                        </Button></div>
+                                        </Button>
+                                        <Button variant="warning" size="sm" onClick={() => handleEditImageShow(product)}>Editar Imagen</Button>
+                                    </div>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -483,6 +524,33 @@ export default function ProductsCard() {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <Modal show={showEditImageModal} onHide={handleEditImageClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Editar Imagen del Producto</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="formProductImageEdit">
+                            <Form.Label>Subir Nueva Imagen</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                onChange={handleImageChange}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleEditImageClose}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={handleUploadImage}>
+                        Guardar Imagen
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
         </>
     );
 }
