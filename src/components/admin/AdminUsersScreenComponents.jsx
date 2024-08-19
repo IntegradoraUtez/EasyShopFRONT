@@ -16,14 +16,11 @@ function AdminUsersScreenComponents() {
     if (!user || user.user.type !== 'admin') {
       navigate('/'); 
     } else {
-      console.log('Tipo:', user.user.type);
-      console.log('Token:', user.token);
-
       fetch('https://ewjkx0lte6.execute-api.us-east-1.amazonaws.com/Prod/get_users', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`, // Si se requiere token de autorización
+          'Authorization': `Bearer ${user.token}`,
         },
       })
         .then(response => {
@@ -43,6 +40,16 @@ function AdminUsersScreenComponents() {
     }
   }, [user, navigate, token]);
 
+  const handleConvertToAdmin = (userId) => {
+    // Lógica para convertir al usuario en administrador
+    console.log('Convertir usuario con ID:', userId);
+  };
+
+  const handleDisableUser = (userId) => {
+    // Lógica para deshabilitar al usuario
+    console.log('Deshabilitar usuario con ID:', userId);
+  };
+
   return (
     <div className="user-table-container">
       <h2>Gestión de Usuarios</h2>
@@ -52,7 +59,6 @@ function AdminUsersScreenComponents() {
             <th>Nombre de Usuario</th>
             <th>Correo Electrónico</th>
             <th>Nombre Completo</th>
-            <th>Teléfono</th>
             <th>Tipo de Usuario</th>
             <th>Acciones</th>
           </tr>
@@ -63,11 +69,22 @@ function AdminUsersScreenComponents() {
               <td>{user.username}</td>
               <td>{user.email}</td>
               <td>{user.name} {user.lastname}</td>
-              <td>{user.phone}</td> {/* Asumiendo que hay un campo de teléfono */}
               <td>{user.type}</td>
               <td>
-                <button className="action-button update">Actualizar</button>
-                <button className="action-button disable">Deshabilitar</button>
+                {user.type === 'user' && (
+                  <button 
+                    className="action-button update" 
+                    onClick={() => handleConvertToAdmin(user.id)}
+                  >
+                    Convertir en Admin
+                  </button>
+                )}
+                <button 
+                  className="action-button disable" 
+                  onClick={() => handleDisableUser(user.id)}
+                >
+                  Deshabilitar
+                </button>
               </td>
             </tr>
           ))}
