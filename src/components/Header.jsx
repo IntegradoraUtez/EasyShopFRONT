@@ -28,6 +28,13 @@ function Header() {
     const navigate = useNavigate();
 
     const handleLogin = async () => {
+        Swal.fire({
+            title: 'Iniciando Sesión',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
         try {
             const response = await axios.post('https://ha7f9zowr1.execute-api.us-east-1.amazonaws.com/Prod/login', {
                 username,

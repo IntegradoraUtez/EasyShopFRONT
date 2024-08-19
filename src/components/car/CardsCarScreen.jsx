@@ -1,72 +1,57 @@
 import React from 'react';
 import { Row, Col, Card, Accordion, Button } from 'react-bootstrap';
 import { BsXCircle } from "react-icons/bs";
-import { Link } from 'react-router-dom';
-import './styleCarScreen.css';
+import { getCartItems, saveCartItems } from '../../context/CartUtils';
 
 function CardsCarScreen() {
-    const purchaseData = [
-        {
-            image: "https://i5.walmartimages.com.mx/mg/gm/3pp/asr/4640411c-283d-422a-8719-eb667968d550.5b112f99bb889fa2627f8f311a54dc0d.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF",
-            datePurchase: "2024-07-26",
-            nameProduct: "Product 1",
-            priceProduct: "$10.00",
-            totalPurchase: "$10.00",
-            discount: 0
-        },
-        {
-            image: "https://pantalonesdemezclilla.mx/cdn/shop/files/tiro-alto-novio-azul-mezclilla-jeans-cintura-simetrica-mujer_8_2cc7ff9a-4287-4817-8665-d2d8e2c99641.jpg?v=1705528720",
-            datePurchase: "2024-07-27",
-            nameProduct: "Product 2",
-            priceProduct: "$20.00",
-            totalPurchase: "$20.00",
-            discount: 5
-        },
-        {
-            image: "https://pantalonesdemezclilla.mx/cdn/shop/files/tiro-alto-novio-azul-mezclilla-jeans-cintura-simetrica-mujer_8_2cc7ff9a-4287-4817-8665-d2d8e2c99641.jpg?v=1705528720",
-            datePurchase: "2024-07-27",
-            nameProduct: "Product 3",
-            priceProduct: "$20.00",
-            totalPurchase: "$20.00",
-            discount: 10
+    const [cartItems, setCartItems] = React.useState([]);
+    const [userId, setUserId] = React.useState(null);
+
+    React.useEffect(() => {
+        // Recuperar el ID del usuario desde localStorage
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        if (storedUser) {
+            setUserId(storedUser.id); // Asumiendo que userData tiene una propiedad id
         }
-    ];
+
+        // Recuperar los artículos del carrito desde localStorage
+        const allCartItems = getCartItems();
+        // Filtrar los artículos del carrito por el ID del usuario
+        if (userId !== null) {
+            const userCartItems = allCartItems.filter(item => item.userId === userId);
+            setCartItems(userCartItems);
+        }
+    }, [userId]);
+
+    const handleRemoveFromCart = (productId) => {
+        const updatedCart = cartItems.filter(item => item.id !== productId);
+        setCartItems(updatedCart);
+        saveCartItems(updatedCart); // Guarda los cambios en el Local Storage
+    };
 
     return (
         <Accordion defaultActiveKey="0" className='mt-3 centered-container'>
-            {purchaseData.map((purchase, index) => (
-                <Accordion.Item eventKey={index.toString()} key={index}>
-                    <Accordion.Header>{purchase.nameProduct}</Accordion.Header>
+            {cartItems.map((item, index) => (
+                <Accordion.Item eventKey={index.toString()} key={item.id}>
+                    <Accordion.Header>{item.name}</Accordion.Header>
                     <Accordion.Body>
                         <Card className="my-3">
                             <Card.Body>
                                 <Row className="align-items-center">
                                     <Col xs={12} md={1} className="text-center my-2">
-                                        <Button variant="link">
-                                            <Link>
-                                                <BsXCircle size={25} />
-                                            </Link>
+                                        <Button variant="link" onClick={() => handleRemoveFromCart(item.id)}>
+                                            <BsXCircle size={25} />
                                         </Button>
                                     </Col>
                                     <Col xs={12} md={3} className="text-center my-2">
-                                        <img style={{ height: 120, width: 110 }} src={purchase.image} alt={purchase.nameProduct} />
+                                        <Card.Img src={item.image} style={{ maxWidth: '150px', maxHeight: '200px' }} />
                                     </Col>
-                                    <Col xs={12} md={4} className="text-center my-2 responsive-text">
-                                        <Row className="align-items-center">
-                                            <Col className="text-center responsive-text">{purchase.nameProduct}</Col>
-                                            <Col className="text-center responsive-text">{purchase.priceProduct}</Col>
-                                            {purchase.discount > 0 && (
-                                                <Col className="text-center text-danger responsive-text">
-                                                    {purchase.discount}%
-                                                </Col>
-                                            )}
-                                        </Row>
-                                    </Col>
-                                    <Col xs={12} md={3} className="text-center my-2 responsive-text">
-                                        <Row className="align-items-center">
-                                            <Col className="text-center responsive-text">{purchase.datePurchase}</Col>
-                                            <Col className="text-center responsive-text">{purchase.totalPurchase}</Col>
-                                        </Row>
+                                    <Col xs={12} md={6} className="my-2">
+                                        <p><strong>Nombre:</strong> {item.name}</p>
+                                        <p><strong>Precio:</strong> ${item.price}</p>
+                                        <p><strong>Stock:</strong> {item.stock}</p>
+                                        <p><strong>Descuento:</strong> ${item.discount}</p>
+                                        <p><strong>Categoría:</strong> {item.category}</p>
                                     </Col>
                                 </Row>
                             </Card.Body>
