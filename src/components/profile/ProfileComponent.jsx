@@ -8,10 +8,9 @@ import { useAuth } from '../../context/AuthContext';
 
 export const Profile = () => {
   const { user } = useAuth();
-
-
   const [show, setShow] = useState(false);
-  const handleClose =() => setShow(false);
+
+  const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const navigate = useNavigate();
 
@@ -22,6 +21,7 @@ export const Profile = () => {
   const handleManageAddresses = () => {
     navigate('/user/manageAddresses');
   };
+
   const handleManageCards = () => {
     navigate('/user/manageCards');
   };
@@ -29,8 +29,9 @@ export const Profile = () => {
   const handleViewPurchases = () => {
     navigate('/user/viewPurchases');
   };
+
   return (
-    <div className="profile-container">
+    <div className="profile-container mb-5">
       <div className="profile-card">
         <div className="profile-header">
           <div className="image-wrapper">
@@ -47,9 +48,13 @@ export const Profile = () => {
         </div>
         <div className="button-container">
           <button className="profile-button" onClick={handleUpdateProfile}>Actualizar información personal</button>
-          <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
-          <button className="profile-button" onClick={handleManageCards}>Administrar tarjetas de pago</button>
-          <button className="profile-button" onClick={handleViewPurchases}>Historial de Compras</button>
+          {user.user.type === 'user' && (
+            <>
+              <button className="profile-button" onClick={handleManageAddresses}>Administrar direcciones de entrega</button>
+              <button className="profile-button" onClick={handleManageCards}>Administrar tarjetas de pago</button>
+              <button className="profile-button" onClick={handleViewPurchases}>Historial de Compras</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -203,7 +208,6 @@ export const Profile = () => {
           .modal-body {
             padding: 20px;
           }
-
 
           @media (max-width: 600px) {
             .profile-header {
