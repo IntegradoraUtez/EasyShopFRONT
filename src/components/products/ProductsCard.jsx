@@ -3,13 +3,14 @@ import { Container, Row, Col, Card, Button, Carousel, Dropdown, Modal } from 're
 import { HiAdjustmentsHorizontal, HiChevronDown } from "react-icons/hi2";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import { getCartItems, saveCartItems } from '../../context/CartUtils';
-import { useAuth } from '../../context/AuthContext'; // Asegúrate de importar tu hook de autenticación
-import './ProductsCard.css'
+import { useAuth } from '../../context/AuthContext';
+import './ProductsCard.css';
 
 export default function ProductsCard() {
     const navigate = useNavigate();
-    const { user } = useAuth(); // Aquí obtenemos la información del usuario
+    const { user } = useAuth();
     const [products, setProducts] = useState([]);
     const [cartItems, setCartItems] = useState([]);
     const [show, setShow] = useState(false);
@@ -25,6 +26,13 @@ export default function ProductsCard() {
         const newCartItems = [...cartItems, product];
         setCartItems(newCartItems);
         saveCartItems(newCartItems);
+
+        Swal.fire({
+            title: '¡Producto agregado!',
+            text: `${product.name} ha sido agregado al carrito.`,
+            icon: 'success',
+            confirmButtonText: 'OK'
+        });
     };
 
     const sortProducts = (criteria) => {
