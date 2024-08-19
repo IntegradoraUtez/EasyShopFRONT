@@ -7,21 +7,35 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-function SingleCard({ name, onModify, onDeactivate }) {
+function SingleCard({ id, name, active, onModify, onToggleActive }) {
     return (
         <Col xs={12} sm={6} md={4} lg={3} className="d-flex justify-content-center mb-3 mb-md-0">
             <Card className="product-card mt-3">
                 <Card.Body>
                     <Card.Title className="responsive-text-card">{name}</Card.Title>
                     <div className="d-flex flex-column mt-2">
-                        <Button variant="secondary" size="sm" className="mb-2" onClick={onModify}>Modificar</Button>
-                        <Button variant="danger" size="sm" onClick={onDeactivate}>Desactivar</Button>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="mb-2"
+                            onClick={() => onModify(id, name)}
+                        >
+                            Modificar
+                        </Button>
+                        <Button
+                            variant={active ? "danger" : "success"}
+                            size="sm"
+                            onClick={onToggleActive}
+                        >
+                            {active ? "Desactivar" : "Activar"}
+                        </Button>
                     </div>
                 </Card.Body>
             </Card>
         </Col>
     );
 }
+
 
 export default function AdminCategories() {
     const { user } = useAuth();
@@ -53,6 +67,8 @@ export default function AdminCategories() {
                     'Content-Type': 'application/json'
                 }
             });
+
+            console.log(response.data);
 
             if (response.data && Array.isArray(response.data.categories)) {
                 setCardsData(response.data.categories);
@@ -93,6 +109,100 @@ export default function AdminCategories() {
         }
     };
 
+const updateCategory = async (categoryId, categoryData) => {
+    try {
+        console.log('Datos enviados:', { id_category: categoryId, name: categoryData.name });
+
+        const response = await axios.put(
+            `https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/update_category_put`,
+            {
+                id: categoryId, // Asegúrate de que el campo sea correcto
+                name: categoryData.name, // Asegúrate de que 'name' es lo que la API espera
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        console.log('Categoría actualizada con éxito:', response.data);
+        await fetchCategories(); // Refrescar la lista de categorías después de la actualización
+        Swal.fire({
+            icon: 'success',
+            title: 'Categoría actualizada con éxito',
+            showConfirmButton: false,
+            timer: 1500
+        });
+    } catch (error) {
+        console.error('Error al actualizar la categoría:', error);
+
+        if (error.response) {
+            console.error('Datos de error:', error.response.data);
+        }
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar la categoría',
+            text: 'Ocurrió un error al actualizar la categoría. Inténtalo de nuevo.'
+        });
+    }
+};
+
+
+
+
+
+    const toggleProductActive = async (productId, currentStatus) => {
+        const action = currentStatus ? "desactivar" : "activar";
+        const confirmButtonText = currentStatus ? "Sí, desactivar" : "Sí, activar";
+
+        const result = await Swal.fire({
+            title: `¿Estás seguro de que deseas ${action} esta categoría?`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: "Cancelar"
+        });
+
+        if (result.isConfirmed) {
+            try {
+                console.log('des ', productId);
+
+                const response = await axios.patch(
+                    `https://alf8xrjokd.execute-api.us-east-1.amazonaws.com/Prod/toggle_category_active/${productId}`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${user.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log(response);
+
+                await fetchCategories();
+                // Refrescar la lista de productos después de activar/desactivar
+                Swal.fire({
+                    icon: 'success',
+                    title: `Categoría ${action}ada con éxito`,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: `Error al ${action} la categoría`,
+                    text: `Ocurrió un error al ${action} la categoría. Inténtalo de nuevo.`
+                });
+            }
+        }
+    };
+
+
     const handleSearchChange = (e) => setSearchTerm(e.target.value);
 
     const handleFilterChange = (showActive) => setShowActive(showActive);
@@ -101,9 +211,15 @@ export default function AdminCategories() {
         await insertCategory(newCategory);
     };
 
-    const handleEditCategory = () => {
-        setShowEditModal(false);
+    const handleModifyCategory = (id, name) => {
+        setEditCategory({ id, name });
+        setShowEditModal(true);
     };
+
+const handleEditCategory = async () => {
+    await updateCategory(editCategory.id, editCategory); 
+    setShowEditModal(false);
+};
 
     const handleDeactivateCategory = () => {
         setShowConfirmDeactivateModal(false);
@@ -121,9 +237,10 @@ export default function AdminCategories() {
 
     const filteredCardsData = cardsData.filter(card => {
         const matchesSearch = card.name && card.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = showActive ? card.active === 1 : card.active !== 1;
+        const matchesFilter = showActive === null || (showActive ? card.active === 1 : card.active !== 1);
         return matchesSearch && matchesFilter;
     });
+
 
     return (
         <>
@@ -148,6 +265,7 @@ export default function AdminCategories() {
                             <Dropdown.Item onClick={() => handleFilterChange(true)}>Activos</Dropdown.Item>
                             <Dropdown.Item onClick={() => handleFilterChange(false)}>Desactivados</Dropdown.Item>
                         </Dropdown.Menu>
+
                     </Dropdown>
                     <Button onClick={() => setShowAddModal(true)} style={{ backgroundColor: 'transparent', color: 'black', border: '1px solid black' }}>
                         Agregar Categoría
@@ -159,18 +277,15 @@ export default function AdminCategories() {
                 {filteredCardsData.map((card, index) => (
                     <SingleCard
                         key={index}
-                        name={card.name} 
-                        onModify={() => {
-                            setEditCategory(card);
-                            setShowEditModal(true);
-                        }}
-                        onDeactivate={() => {
-                            setSelectedCategory(card.name);
-                            setShowConfirmDeactivateModal(true);
-                        }}
+                        id={card.id}
+                        name={card.name}
+                        active={card.active === 1}
+                        onModify={handleModifyCategory}
+                        onToggleActive={() => toggleProductActive(card.id, card.active === 1)}
                     />
                 ))}
             </Row>
+
 
             {/* Modal para Agregar Categoría */}
             <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
