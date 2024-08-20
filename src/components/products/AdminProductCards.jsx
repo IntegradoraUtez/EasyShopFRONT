@@ -385,8 +385,8 @@ export default function ProductsCard() {
             reader.onloadend = () => {
                 setNewProduct({
                     ...newProduct,
-                    image_data: reader.result.split(',')[1], // Base64 sin la parte "data:image/jpeg;base64,"
-                    image_type: file.type.split('/')[1] // 'jpeg' o 'png'
+                    image_data: reader.result.split(',')[1], 
+                    image_type: file.type.split('/')[1]
                 });
 
 
