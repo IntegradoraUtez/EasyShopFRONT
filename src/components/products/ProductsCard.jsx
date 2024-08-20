@@ -55,7 +55,13 @@ export default function ProductsCard() {
         }
         setProducts(sortedProducts);
     };
-
+    const images = [
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/2_5.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/1_3.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/4_13.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/5_7.jpeg",
+        "https://integradoraeasyshop.s3.us-east-1.amazonaws.com/categoriesImages/5_14.jpeg"
+    ];
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -77,22 +83,22 @@ export default function ProductsCard() {
         setCartItems(getCartItems());
     }, []);
 
-    return (
+    return ( 
         <>
             <div className="carousel-container">
-                <Carousel className="custom-carousel">
-                    <Carousel.Item>
-                        <img
-                            className="d-block w-100"
-                            src="https://via.placeholder.com/1000x400"
-                            alt="First slide"
-                        />
-                        <Carousel.Caption>
-                            <h3>First slide label</h3>
-                            <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-                        </Carousel.Caption>
-                    </Carousel.Item>
-                </Carousel>
+            <Carousel className="custom-carousel">
+            {images.map((image, index) => (
+                <Carousel.Item key={index}>
+                    <img
+                        className="d-block w-100"
+                        src={image}
+                        alt={`Slide ${index + 1}`}
+                    />
+                    <Carousel.Caption> 
+                    </Carousel.Caption>
+                </Carousel.Item>
+            ))}
+        </Carousel>
             </div>
 
             <Container>
